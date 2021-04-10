@@ -1,0 +1,36 @@
+server:
+  applicationConnectors:
+    - type: http
+      port: 7575
+  adminConnectors:
+    - type: http
+      port: 7576
+
+firestore:
+  projectId: "alt-textorg"
+  databaseId: "alt-text-library"
+  altTextCollection: "texts"
+  faveCollection: "faves"
+  readAwaitMillis: 3000
+  writeAwaitMillis: 5000
+  readThreads: 100
+  readQueueLen: 10000
+  markFlushIntervalSeconds: 3
+  markShutdownAwaitSeconds: 10
+
+twitter:
+  accessTokenName: "access-token"
+  accessTokenSecretName: "access-token-secret"
+  apiKeyName: "api-key"
+  apiSecretKeyName: "api-key-secret"
+
+auth:
+  acceptableTimeDeltaMillis: 5000
+  resourceRetrieverTimeoutSeconds: 10
+  admins: []
+  banned: []
+  google:
+    jwkUrl: "https://www.googleapis.com/oauth2/v3/certs"
+    algorithm: "RS256"
+    audience: "https://api.alt-text.org"
+    issuer: "https://accounts.google.com"
