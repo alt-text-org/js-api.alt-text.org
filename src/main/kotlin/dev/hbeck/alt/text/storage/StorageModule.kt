@@ -8,6 +8,7 @@ import com.google.firebase.cloud.FirestoreClient
 import com.google.inject.AbstractModule
 import dev.hbeck.alt.text.admin.AltTextAdmin
 import dev.hbeck.alt.text.admin.LoggingAltTextAdmin
+import dev.hbeck.alt.text.retriever.Hasher
 import dev.hbeck.alt.text.storage.firestore.AsyncUsageMarker
 import dev.hbeck.alt.text.storage.firestore.FirestoreAltTextStorage
 import dev.hbeck.alt.text.storage.firestore.FirestoreConfiguration

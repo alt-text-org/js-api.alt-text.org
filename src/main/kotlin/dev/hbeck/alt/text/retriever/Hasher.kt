@@ -1,4 +1,4 @@
-package dev.hbeck.alt.text.storage
+package dev.hbeck.alt.text.retriever
 
 
 interface Hasher {

@@ -8,6 +8,8 @@ import dev.hbeck.alt.text.http.ratelimits.RateLimited
 import dev.hbeck.alt.text.storage.AltTextStorage
 import dev.hbeck.alt.text.storage.AltTextWriteResult
 import dev.hbeck.alt.text.proto.*
+import dev.hbeck.alt.text.retriever.Hasher
+import dev.hbeck.alt.text.retriever.MatchManager
 import io.dropwizard.auth.Auth
 import java.net.URL
 import java.util.*
@@ -26,10 +28,13 @@ import javax.ws.rs.core.SecurityContext
 @PermitAll
 class PublicAltTextResource @Inject constructor(
     private val storage: AltTextStorage,
-    private val admin: AltTextAdmin
+    private val matchManager: MatchManager,
+    private val admin: AltTextAdmin,
+    private val hasher: Hasher
 ) {
     companion object {
-        private const val langHeader = "X-Alt-Text-Acceptable-Languages"
+        private const val signatureHeader = "X-Alt-Text-Org-Image-Signature"
+        private const val maxMatches = 10
     }
 
     @Context
@@ -41,16 +46,23 @@ class PublicAltTextResource @Inject constructor(
     @RateLimited("GET_ALT_TEXT", 0.20, IP)
     fun getAltTextForImage(
         @PathParam("img_hash") imgHash: String,
-        @HeaderParam(langHeader) languagesRaw: String?
+        @QueryParam("lang") language: String,
+        @QueryParam("matches") matches: Int,
+        @HeaderParam(signatureHeader) signature: String
     ): GetAltTextsForImageResponse {
-        val languages = languagesRaw?.split(",")?.toSet() ?: setOf()
-        languages.forEach {
-            if (it.length != 2 || Locale.forLanguageTag(it) == null) {
-                throw BadRequestException("""{"reason": "Unknown ISO 639-2 language code: '$it'"}""")
-            }
+        if (language.length != 2 || Locale.forLanguageTag(language) == null) {
+            throw BadRequestException("""{"reason": "Unknown ISO 639-2 language code: '$language'"}""")
+        } else if (matches > maxMatches) {
+            throw BadRequestException("""{"reason": "Only $maxMatches may be requested"}""")
         }
 
-        val texts = storage.getAltTextForImage(imgHash, languages)
+        val texts = matchManager.getMatchingTexts(
+            imageHash = imgHash,
+            signature = signature,
+            language = language,
+            matches = matches
+        )
+
         if (texts.isEmpty()) {
             throw NotFoundException()
         }
@@ -84,6 +96,7 @@ class PublicAltTextResource @Inject constructor(
         val textWriteResult = storage.addAltTextAsync(
             imgHash = imgHash,
             username = user.name,
+            userHash = hasher.hash(user.name),
             altText = altText.text,
             language = altText.language,
             url = altText.url.takeIf { it.isNotEmpty() })

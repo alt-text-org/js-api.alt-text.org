@@ -5,7 +5,7 @@ import com.google.inject.Inject
 import dev.hbeck.alt.text.proto.*
 import dev.hbeck.alt.text.storage.AltTextWriteResult
 import dev.hbeck.alt.text.storage.AltTextStorage
-import dev.hbeck.alt.text.storage.Hasher
+import dev.hbeck.alt.text.retriever.Hasher
 import java.lang.IllegalStateException
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CompletableFuture
@@ -41,11 +41,11 @@ class FirestoreAltTextStorage @Inject constructor(
         ThreadPoolExecutor.CallerRunsPolicy()
     )
 
-    override fun getAltTextForImage(imgHash: String, languages: Set<String>): Map<String, RetrievedAltText> {
+    override fun getAltTextForImage(imgHash: String, language: String?): Map<String, RetrievedAltText> {
         val collection = firestore.collection(configuration.altTextCollection)
         var query = collection.whereEqualTo(imgHashField, imgHash)
-        if (languages.isNotEmpty()) {
-            query = query.whereIn(langField, languages.toMutableList())
+        if (language != null) {
+            query = query.whereEqualTo(langField, language)
         }
 
         val result = query.get().get(configuration.readAwaitMillis, TimeUnit.MILLISECONDS)
@@ -53,7 +53,8 @@ class FirestoreAltTextStorage @Inject constructor(
             it[userHashField] as String to RetrievedAltText(
                 text = it[altTextField] as String,
                 language = it[langField] as String,
-                timesUsed = it[usageField] as Long
+                timesUsed = it[usageField] as Long,
+                confidence = 1.0F
             )
         }.toMap()
     }
@@ -89,13 +90,13 @@ class FirestoreAltTextStorage @Inject constructor(
 
     override fun addAltTextAsync(
         imgHash: String,
+        userHash: String,
         username: String,
         altText: String,
         language: String,
         url: String?
     ): AltTextWriteResult {
-        val userHash = hasher.hash(username)
-        val existing = getAltTextForImage(imgHash, setOf(language))
+        val existing = getAltTextForImage(imgHash, language)
         existing.values.forEach {
             if (it.text == altText) {
                 return AltTextWriteResult.CONFLICT

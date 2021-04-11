@@ -5,3 +5,5 @@ gradle/wrapper/gradle-wrapper.jar
 *~
 .env
 gradle.properties
+pinecone-client-dist
+src/main/java/io/pinecone

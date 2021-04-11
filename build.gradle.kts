@@ -15,6 +15,7 @@ repositories {
         isAllowInsecureProtocol = true
     }
     mavenCentral()
+    mavenLocal()
     maven("https://jitpack.io")
     maven("https://maven.pkg.github.com/alt-text-org/alt-text-protos") {
         credentials(HttpHeaderCredentials::class) {
@@ -56,6 +57,14 @@ dependencies {
 
     implementation("org.alt-text:alt-text-protos:0.0.9")
     implementation("com.github.streem.pbandk:pbandk-runtime-jvm:$pbandkVersion")
+
+    /* Pinecone Deps */
+    implementation("io.netty:netty-tcnative-boringssl-static:2.0.35.Final")
+    implementation("io.grpc:grpc-protobuf:1.35.0")
+    implementation("io.grpc:grpc-stub:1.35.0")
+    implementation("io.grpc:grpc-netty:1.35.0")
+    implementation("org.slf4j:slf4j-api:1.7.30")
+
 
     testImplementation("junit:junit:4.12")
     testImplementation("org.mockito:mockito-core:2.22.0")
