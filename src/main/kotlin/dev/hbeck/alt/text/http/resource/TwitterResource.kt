@@ -2,8 +2,8 @@ package dev.hbeck.alt.text.http.resource
 
 import dev.hbeck.alt.text.http.ratelimits.RateLimitScopeExtractor
 import dev.hbeck.alt.text.http.ratelimits.RateLimited
-import dev.hbeck.alt.text.proto.TwitterAnalysis
 import dev.hbeck.alt.text.twitter.TwitterAnalyzer
+import dev.hbeck.alt.text.proto.TwitterAnalysis
 import javax.annotation.security.PermitAll
 import javax.inject.Inject
 import javax.inject.Singleton

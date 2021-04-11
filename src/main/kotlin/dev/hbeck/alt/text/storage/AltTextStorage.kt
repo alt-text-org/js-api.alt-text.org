@@ -1,14 +1,12 @@
 package dev.hbeck.alt.text.storage
 
-import dev.hbeck.alt.text.proto.ImageRecord
-import dev.hbeck.alt.text.proto.UserFavorite
-import dev.hbeck.alt.text.proto.UserImageRecord
+import dev.hbeck.alt.text.proto.*
 
 
 interface AltTextStorage {
-    fun getAltTextForImage(imgHash: String, languages: Set<String>): Map<String, ImageRecord>
+    fun getAltTextForImage(imgHash: String, languages: Set<String>): Map<String, RetrievedAltText>
 
-    fun getAltText(imgHash: String, userHash: String): UserImageRecord?
+    fun getAltText(imgHash: String, userHash: String): UserAltText?
 
     fun addAltTextAsync(
         imgHash: String,
@@ -20,7 +18,7 @@ interface AltTextStorage {
 
     fun deleteAltTextAsync(imgHash: String, username: String)
 
-    fun getAltTextForUser(username: String): Map<String, UserImageRecord>
+    fun getAltTextForUser(username: String): Map<String, UserAltText>
 
     fun getFavoritesForUser(username: String): List<UserFavorite>
 

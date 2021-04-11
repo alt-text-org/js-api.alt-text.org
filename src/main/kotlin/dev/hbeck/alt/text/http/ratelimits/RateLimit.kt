@@ -15,7 +15,7 @@ class RateLimit(limitPerSecond: Double, cacheSize: Int) {
 
     private val rateLimiters = CacheBuilder.newBuilder()
         .maximumSize(cacheSize.toLong())
-        .build<String, RateLimiter>(Loader(limitPerSecond))
+        .build(Loader(limitPerSecond))
 
     fun checkRateLimit(scope: String) {
         val rateLimiter = rateLimiters[scope]

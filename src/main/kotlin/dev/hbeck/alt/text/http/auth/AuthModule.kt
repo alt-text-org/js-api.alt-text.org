@@ -5,6 +5,7 @@ import com.google.inject.Provides
 import com.google.inject.Singleton
 import com.nimbusds.jose.proc.SecurityContext
 import dev.hbeck.alt.text.http.auth.principal.GooglePrincipal
+import dev.hbeck.alt.text.http.auth.principal.GooglePrincipalParser
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter
 import java.net.http.HttpClient
 
@@ -36,7 +37,8 @@ class AuthModule(
             configuration.acceptableTimeDeltaMillis,
             googleConfigurator
         )
-        val googleAuthenticator = AltTextAuthenticator(googleVerifier, configuration.admins)
+        val googlePrincipalParser = GooglePrincipalParser()
+        val googleAuthenticator = AltTextAuthenticator(googleVerifier, googlePrincipalParser, configuration.admins)
         val googleFilter = OAuthCredentialAuthFilter.Builder<GooglePrincipal>()
             .setAuthenticator(googleAuthenticator)
             .setAuthorizer(AltTextAuthorizer())

@@ -1,23 +1,30 @@
-import com.google.protobuf.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.4.32"
     kotlin("plugin.serialization") version "1.4.32"
-    id("com.google.protobuf") version "0.8.12"
     id("com.google.cloud.tools.jib") version "2.5.0"
     application
 }
 
 val kotlinxSerializationVersion by extra("0.20.0")
-val protobufVersion by extra("3.11.1")
-val pbandkVersion by extra("0.9.1")
+val pbandkVersion by extra("0.8.1")
 
 repositories {
-    jcenter()
+    maven("http://jcenter.bintray.com") {
+        isAllowInsecureProtocol = true
+    }
     mavenCentral()
     maven("https://jitpack.io")
-    maven("http://jcenter.bintray.com")
+    maven("https://maven.pkg.github.com/alt-text-org/alt-text-protos") {
+        credentials(HttpHeaderCredentials::class) {
+            name = "Authorization"
+            value = "Bearer ${project.findProperty("gpr.token") as String}"
+        }
+        authentication {
+            create<HttpHeaderAuthentication>("header")
+        }
+    }
 }
 
 application {
@@ -38,7 +45,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0")
     implementation("org.glassfish.jersey.bundles.repackaged:jersey-guava:2.6")
 
-    implementation("pro.streem.pbandk:pbandk-runtime:$pbandkVersion")
     implementation("io.lktk:blake3jni:0.2.2")
     implementation("com.github.seratch:signedrequest4j:2.14")
 
@@ -48,48 +54,13 @@ dependencies {
     implementation("com.google.oauth-client:google-oauth-client-jetty:1.31.2")
     implementation("com.google.cloud:google-cloud-secretmanager:1.4.2")
 
+    implementation("org.alt-text:alt-text-protos:0.0.9")
+    implementation("com.github.streem.pbandk:pbandk-runtime-jvm:$pbandkVersion")
+
     testImplementation("junit:junit:4.12")
     testImplementation("org.mockito:mockito-core:2.22.0")
     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0")
     testImplementation("com.github.tdomzal:junit-docker-rule:0.4.1")
-}
-
-protobuf {
-    generatedFilesBaseDir = "$projectDir/src"
-    protoc {
-        artifact = "com.google.protobuf:protoc:$protobufVersion"
-    }
-    plugins {
-        id("kotlin") {
-            artifact = "pro.streem.pbandk:protoc-gen-kotlin-jvm:$pbandkVersion:jvm8@jar"
-        }
-    }
-    generateProtoTasks {
-        ofSourceSet("main").forEach { task ->
-            task.builtins {
-                remove("java")
-            }
-            task.plugins {
-                id("kotlin") {
-                    option("kotlin_package=dev.hbeck.alt.text.proto")
-                }
-            }
-        }
-    }
-}
-
-configurations.named("compileProtoPath") {
-    attributes {
-        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_API))
-        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
-    }
-}
-
-configurations.named("testCompileProtoPath") {
-    attributes {
-        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_API))
-        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
-    }
 }
 
 tasks {

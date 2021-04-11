@@ -1,5 +1,6 @@
 package dev.hbeck.alt.text.http.auth
 
+import dev.hbeck.alt.text.http.auth.principal.UserPrincipal
 import io.dropwizard.auth.Authorizer
 
 

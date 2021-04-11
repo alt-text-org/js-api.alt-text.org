@@ -2,9 +2,7 @@ package dev.hbeck.alt.text.storage.firestore
 
 import com.google.cloud.firestore.Firestore
 import com.google.inject.Inject
-import dev.hbeck.alt.text.proto.ImageRecord
-import dev.hbeck.alt.text.proto.UserFavorite
-import dev.hbeck.alt.text.proto.UserImageRecord
+import dev.hbeck.alt.text.proto.*
 import dev.hbeck.alt.text.storage.AltTextWriteResult
 import dev.hbeck.alt.text.storage.AltTextStorage
 import dev.hbeck.alt.text.storage.Hasher
@@ -43,7 +41,7 @@ class FirestoreAltTextStorage @Inject constructor(
         ThreadPoolExecutor.CallerRunsPolicy()
     )
 
-    override fun getAltTextForImage(imgHash: String, languages: Set<String>): Map<String, ImageRecord> {
+    override fun getAltTextForImage(imgHash: String, languages: Set<String>): Map<String, RetrievedAltText> {
         val collection = firestore.collection(configuration.altTextCollection)
         var query = collection.whereEqualTo(imgHashField, imgHash)
         if (languages.isNotEmpty()) {
@@ -52,8 +50,8 @@ class FirestoreAltTextStorage @Inject constructor(
 
         val result = query.get().get(configuration.readAwaitMillis, TimeUnit.MILLISECONDS)
         return result.documents.map {
-            it[userHashField] as String to ImageRecord(
-                altText = it[altTextField] as String,
+            it[userHashField] as String to RetrievedAltText(
+                text = it[altTextField] as String,
                 language = it[langField] as String,
                 timesUsed = it[usageField] as Long
             )
@@ -63,9 +61,9 @@ class FirestoreAltTextStorage @Inject constructor(
     override fun getAltText(imgHash: String, userHash: String) =
         getAltTextAsync(imgHash, userHash).get(configuration.readAwaitMillis, TimeUnit.MILLISECONDS)
 
-    private fun getAltTextAsync(imgHash: String, userHash: String): Future<UserImageRecord?> {
+    private fun getAltTextAsync(imgHash: String, userHash: String): Future<UserAltText?> {
         val collection = firestore.collection(configuration.altTextCollection)
-        val future = CompletableFuture<UserImageRecord?>()
+        val future = CompletableFuture<UserAltText?>()
         val apiFuture = collection.whereEqualTo(imgHashField, imgHash).whereEqualTo(userHashField, userHash).get()
         apiFuture.addListener({
             val result = apiFuture.get()
@@ -73,8 +71,8 @@ class FirestoreAltTextStorage @Inject constructor(
                 1 -> {
                     val doc = result.documents[0]
                     future.complete(
-                        UserImageRecord(
-                            altText = doc[altTextField] as String,
+                        UserAltText(
+                            text = doc[altTextField] as String,
                             language = doc[langField] as String,
                             url = doc[urlField] as String? ?: "",
                             timesUsed = doc[usageField] as Long
@@ -99,7 +97,7 @@ class FirestoreAltTextStorage @Inject constructor(
         val userHash = hasher.hash(username)
         val existing = getAltTextForImage(imgHash, setOf(language))
         existing.values.forEach {
-            if (it.altText == altText) {
+            if (it.text == altText) {
                 return AltTextWriteResult.CONFLICT
             }
         }
@@ -124,15 +122,15 @@ class FirestoreAltTextStorage @Inject constructor(
         document.delete()
     }
 
-    override fun getAltTextForUser(username: String): Map<String, UserImageRecord> {
+    override fun getAltTextForUser(username: String): Map<String, UserAltText> {
         val userHash = hasher.hash(username)
         val collection = firestore.collection(configuration.altTextCollection)
         val query = collection.whereEqualTo(userHashField, userHash)
 
         val result = query.get().get(configuration.readAwaitMillis, TimeUnit.MILLISECONDS)
         return result.documents.map {
-            it[imgHashField] as String to UserImageRecord(
-                altText = it[altTextField] as String,
+            it[imgHashField] as String to UserAltText(
+                text = it[altTextField] as String,
                 language = it[langField] as String,
                 url = it[urlField] as String? ?: "",
                 timesUsed = it[usageField] as Long
@@ -149,7 +147,7 @@ class FirestoreAltTextStorage @Inject constructor(
             UserFavorite(
                 userHash = it[userHashField] as String,
                 imageHash = it[imgHashField] as String,
-                altText = it[altTextField] as String,
+                text = it[altTextField] as String,
                 language = it[langField] as String
             )
         }.toList()

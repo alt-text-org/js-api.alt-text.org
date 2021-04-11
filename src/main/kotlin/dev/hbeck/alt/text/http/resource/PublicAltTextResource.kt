@@ -1,18 +1,13 @@
 package dev.hbeck.alt.text.http.resource
 
 import dev.hbeck.alt.text.admin.AltTextAdmin
-import dev.hbeck.alt.text.http.auth.UserPrincipal
+import dev.hbeck.alt.text.http.auth.principal.UserPrincipal
 import dev.hbeck.alt.text.http.ratelimits.RateLimitScopeExtractor.IP
 import dev.hbeck.alt.text.http.ratelimits.RateLimitScopeExtractor.USER
 import dev.hbeck.alt.text.http.ratelimits.RateLimited
-import dev.hbeck.alt.text.proto.AltText
-import dev.hbeck.alt.text.proto.AltTextReport
-import dev.hbeck.alt.text.proto.GetAltTextsForImageResponse
-import dev.hbeck.alt.text.proto.GetAltTextsForUserResponse
-import dev.hbeck.alt.text.proto.GetFavoritesForUserResponse
-import dev.hbeck.alt.text.proto.UserFavoriteRequest
 import dev.hbeck.alt.text.storage.AltTextStorage
 import dev.hbeck.alt.text.storage.AltTextWriteResult
+import dev.hbeck.alt.text.proto.*
 import io.dropwizard.auth.Auth
 import java.net.URL
 import java.util.*
@@ -46,8 +41,7 @@ class PublicAltTextResource @Inject constructor(
     @RateLimited("GET_ALT_TEXT", 0.20, IP)
     fun getAltTextForImage(
         @PathParam("img_hash") imgHash: String,
-        @HeaderParam(langHeader) languagesRaw: String?,
-        @Auth user: Optional<UserPrincipal>
+        @HeaderParam(langHeader) languagesRaw: String?
     ): GetAltTextsForImageResponse {
         val languages = languagesRaw?.split(",")?.toSet() ?: setOf()
         languages.forEach {
@@ -62,7 +56,7 @@ class PublicAltTextResource @Inject constructor(
         }
 
         return GetAltTextsForImageResponse(
-            exactTexts = texts
+            texts = texts
         )
     }
 
@@ -73,7 +67,7 @@ class PublicAltTextResource @Inject constructor(
     fun addAltText(
         @PathParam("img_hash") imgHash: String,
         @Auth user: UserPrincipal,
-        altText: AltText,
+        altText: NewAltText,
     ): Response {
         altText.url.takeIf { it.isNotEmpty() }?.let {
             try {
@@ -89,8 +83,8 @@ class PublicAltTextResource @Inject constructor(
 
         val textWriteResult = storage.addAltTextAsync(
             imgHash = imgHash,
-            username = user.username,
-            altText = altText.altText,
+            username = user.name,
+            altText = altText.text,
             language = altText.language,
             url = altText.url.takeIf { it.isNotEmpty() })
         return when (textWriteResult) {
@@ -107,7 +101,7 @@ class PublicAltTextResource @Inject constructor(
         @PathParam("img_hash") imgHash: String,
         @Auth user: UserPrincipal
     ): Response {
-        storage.deleteAltTextAsync(imgHash = imgHash, username = user.username)
+        storage.deleteAltTextAsync(imgHash = imgHash, username = user.name)
         return Response.accepted().build()
     }
 
@@ -116,7 +110,7 @@ class PublicAltTextResource @Inject constructor(
     @Path("/user")
     @RateLimited("USER_ALT_TEXT", 0.1, USER)
     fun getUser(@Auth user: UserPrincipal): GetAltTextsForUserResponse {
-        val altTextForUser = storage.getAltTextForUser(user.username)
+        val altTextForUser = storage.getAltTextForUser(user.name)
         if (altTextForUser.isNotEmpty()) {
             return GetAltTextsForUserResponse(altTextForUser)
         } else {
@@ -129,7 +123,7 @@ class PublicAltTextResource @Inject constructor(
     @Path("/favorites")
     @RateLimited("GET_FAVES", 0.1, USER)
     fun getFavorites(@Auth user: UserPrincipal): GetFavoritesForUserResponse {
-        val favoritesForUser = storage.getFavoritesForUser(user.username)
+        val favoritesForUser = storage.getFavoritesForUser(user.name)
         if (favoritesForUser.isNotEmpty()) {
             return GetFavoritesForUserResponse(favoritesForUser)
         } else {
@@ -138,7 +132,7 @@ class PublicAltTextResource @Inject constructor(
     }
 
     @POST
-    @Path("/favorite/{img_hash}")
+    @Path("/favorite/{img_hash}/{user_hash}")
     @RateLimited("FAVE", 0.1, USER)
     fun favorite(
         @PathParam("img_hash") imgHash: String,
@@ -149,8 +143,8 @@ class PublicAltTextResource @Inject constructor(
         storage.favoriteAsync(
             imgHash = imgHash,
             userHash = userHash,
-            username = user.username,
-            altText = request.altText,
+            username = user.name,
+            altText = request.text,
             language = request.language
         )
 
@@ -176,9 +170,8 @@ class PublicAltTextResource @Inject constructor(
             admin.report(
                 imgHash = imgHash,
                 usernameHash = userHash,
-                username = user.username,
-                reason = report.reason,
-                imgRecord = imageRecord
+                username = user.name,
+                reason = report.reason
             )
 
             return Response.noContent().build()
@@ -192,8 +185,7 @@ class PublicAltTextResource @Inject constructor(
     @RateLimited("MARK_ALT_TEXT", 1.0, IP)
     fun markAltTextUsed(
         @PathParam("img_hash") imgHash: String,
-        @PathParam("user_hash") userHash: String,
-        @Auth user: Optional<UserPrincipal>
+        @PathParam("user_hash") userHash: String
     ): Response {
         storage.markAltTextUsedAsync(imgHash = imgHash, userHash = userHash)
 

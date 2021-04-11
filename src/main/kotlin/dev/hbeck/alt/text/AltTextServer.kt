@@ -27,7 +27,6 @@ import java.util.EnumSet
 class AltTextServer : Application<AltTextConfiguration>() {
     override fun initialize(bootstrap: Bootstrap<AltTextConfiguration>) {
         bootstrap.objectMapper?.registerModule(KotlinModule())
-        bootstrap.objectMapper?.registerModule(PBSerDeModule())
     }
 
     override fun getName(): String = "alt-text-library"
