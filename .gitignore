@@ -1,5 +1,7 @@
 build/
 .idea/
+.gradle/
+gradle/wrapper/gradle-wrapper.jar
 *~
 .env
 gradle.properties
