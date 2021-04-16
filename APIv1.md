@@ -8,10 +8,10 @@ Concepts
 --------
 
 Alt-Text.org does not store any images, only text. That text is uniquely identified by a three part key:
-`(username-hash, image-hash, language)` this means that a given user may save only one description per image. In
-addition, searches may pass an *Image Signature*, a feature vector extracted from the image used to search for images
-that are very similar, but not exactly the same. Currently, the only signature algorithm supported is the one layed out
-in
+`(username-hash, image-hash, language)` this means that a given user may save only one description per image and
+language. In addition, searches may pass an *Image Signature*, a feature vector extracted from the image used to search
+for images that are very similar, but not exactly the same. Currently, the only signature algorithm supported is the one
+layed out in
 [An Image Signature For Any Kind Of Image](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.2585&rep=rep1&type=pdf)
 by Goldberg et al.
 
