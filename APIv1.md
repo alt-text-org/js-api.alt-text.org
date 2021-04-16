@@ -39,10 +39,6 @@ Endpoints
 
 Searches the library for descriptions for the specified image and image signature if one is specified.
 
-__Optional Headers__:
-
-- `X-Alt-Text-Org-Goldberg-Signature: <base64 image Goldberg et al. signature>`
-
 __Required path parameters__:
 
 - `image_hash`:  The hex-encoded SHA256 hash of the bitmap representation of the image being searched
@@ -52,6 +48,10 @@ __Optional query parameters__:
 
 - `matches`: The number of matches to return, maximum is 20
 - `min_confidence`: A floating point number between 0.0 and 1.0 indicating the minimum match confidence
+
+__Optional Headers__:
+
+- `X-Alt-Text-Org-Goldberg-Signature: <base64 image Goldberg et al. signature>`
 
 __Rate Limit__
 
@@ -93,14 +93,18 @@ an `HTTP 429 Too Many Requests` will be returned.
 
 Publishes an image description.
 
-__Optional Headers__:
-
-- `X-Alt-Text-Org-Goldberg-Signature: <base64 image Goldberg et al. signature>`
-
 __Required path parameters__:
 
 - `image_hash`:  The hex-encoded SHA256 hash of the bitmap representation of the image being searched
 - `language`: The ISO-639-2 language code for the search language
+
+__Required Headers__
+
+- `X-Alt-Text-Org-Timestamp`: A millisecond-precision UTC-zoned ISO-8601 timestamp with the time this action occurred
+
+__Optional Headers__:
+
+- `X-Alt-Text-Org-Goldberg-Signature: <base64 image Goldberg et al. signature>`
 
 __Rate Limit__
 
@@ -137,6 +141,10 @@ __Required path parameters__:
 
 - `image_hash`:  The hex-encoded SHA256 hash of the bitmap representation of the image being searched
 - `language`: The ISO-639-2 language code for the search language
+
+__Required Headers__
+
+- `X-Alt-Text-Org-Timestamp`: A millisecond-precision UTC-zoned ISO-8601 timestamp with the time this action occurred
 
 __Rate Limit__
 
@@ -235,21 +243,13 @@ __Required path parameters__:
 - `user_hash`: The SHA256 hash of the author's username
 - `language`: The ISO-639-2 language code for the description language
 
+__Required Headers__
+
+- `X-Alt-Text-Org-Timestamp`: A millisecond-precision UTC-zoned ISO-8601 timestamp with the time this action occurred
+
 __Rate Limit__
 
 6 calls/minute, bucketed by username
-
-__Request Body__
-
-The body must be a single JSON object with the following format.
-
-```json
-{
-  "timestamp": "2021-04-16T18:59:06.017Z"
-}
-```
-
-- `timestamp`: A millisecond-precision UTC-zoned ISO-8601 timestamp with the time this action occurred
 
 Always returns an `HTTP 202 Accepted` unless a rate limit is hit. If the rate limit is exceeded
 an `HTTP 429 Too Many Requests` will be returned.
@@ -266,21 +266,13 @@ __Required path parameters__:
 - `user_hash`: The SHA256 hash of the author's username
 - `language`: The ISO-639-2 language code for the description language
 
+__Required Headers__
+
+- `X-Alt-Text-Org-Timestamp`: A millisecond-precision UTC-zoned ISO-8601 timestamp with the time this action occurred
+
 __Rate Limit__
 
 6 calls/minute, bucketed by username
-
-__Request Body__
-
-The body must be a single JSON object with the following format.
-
-```json
-{
-  "timestamp": "2021-04-16T18:59:06.017Z"
-}
-```
-
-- `timestamp`: A millisecond-precision UTC-zoned ISO-8601 timestamp with the time this action occurred
 
 Always returns an `HTTP 202 Accepted` unless a rate limit is hit. If the rate limit is exceeded
 an `HTTP 429 Too Many Requests` will be returned.
