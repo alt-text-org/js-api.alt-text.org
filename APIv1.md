@@ -239,7 +239,20 @@ __Rate Limit__
 
 6 calls/minute, bucketed by username
 
-Always returns an `HTTP 202 Accepted`. If the rate limit is exceeded an `HTTP 429 Too Many Requests` will be returned.
+__Request Body__
+
+The body must be a single JSON object with the following format.
+
+```json
+{
+  "timestamp": "2021-04-16T18:59:06.017Z"
+}
+```
+
+- `timestamp`: A millisecond-precision UTC-zoned ISO-8601 timestamp with the time this action occurred
+
+Always returns an `HTTP 202 Accepted` unless a rate limit is hit. If the rate limit is exceeded
+an `HTTP 429 Too Many Requests` will be returned.
 
 ---
 
@@ -257,8 +270,20 @@ __Rate Limit__
 
 6 calls/minute, bucketed by username
 
-Always returns an `HTTP 202 Accepted`. If the rate limit is exceeded an `HTTP 429 Too Many Requests` will be returned.
+__Request Body__
 
+The body must be a single JSON object with the following format.
+
+```json
+{
+  "timestamp": "2021-04-16T18:59:06.017Z"
+}
+```
+
+- `timestamp`: A millisecond-precision UTC-zoned ISO-8601 timestamp with the time this action occurred
+
+Always returns an `HTTP 202 Accepted` unless a rate limit is hit. If the rate limit is exceeded
+an `HTTP 429 Too Many Requests` will be returned.
 ---
 
 ### POST /api/alt-text/public/v1/report/{image_hash}/{user_hash}/{language}
