@@ -223,7 +223,7 @@ an `HTTP 429 Too Many Requests` will be returned.
 
 ---
 
-### POST /api/alt-text/public/v1/favorite/{image_hash}/{language}
+### POST /api/alt-text/public/v1/favorite/{image_hash}/{user_hash}/{language}
 
 "Favorites" an image description. This stores the description for the user for quick access, as well as saving it for
 the user in case the original is modified or deleted. A user my have at most one description favorited for a given image
@@ -232,6 +232,7 @@ and language.
 __Required path parameters__:
 
 - `image_hash`:  The hex-encoded SHA256 hash of the bitmap representation of the image
+- `user_hash`: The SHA256 hash of the author's username
 - `language`: The ISO-639-2 language code for the description language
 
 __Rate Limit__
@@ -254,13 +255,14 @@ Always returns an `HTTP 202 Accepted`. If the rate limit is exceeded an `HTTP 42
 
 ---
 
-### DELETE /api/alt-text/public/v1/favorite/{image_hash}/{language}
+### DELETE /api/alt-text/public/v1/favorite/{image_hash}{user_hash}/{language}
 
 "Unfavorites" an image description.
 
 __Required path parameters__:
 
 - `image_hash`:  The hex-encoded SHA256 hash of the bitmap representation of the image
+- `user_hash`: The SHA256 hash of the author's username
 - `language`: The ISO-639-2 language code for the description language
 
 __Rate Limit__
