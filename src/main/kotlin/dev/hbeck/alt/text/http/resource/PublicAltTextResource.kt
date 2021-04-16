@@ -33,7 +33,7 @@ class PublicAltTextResource @Inject constructor(
     private val hasher: Hasher
 ) {
     companion object {
-        private const val signatureHeader = "X-Alt-Text-Org-Image-Signature"
+        private const val signatureHeader = "X-Alt-Text-Org-Goldberg-Signature"
         private const val maxMatches = 10
     }
 
