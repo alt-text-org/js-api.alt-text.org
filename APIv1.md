@@ -239,18 +239,6 @@ __Rate Limit__
 
 6 calls/minute, bucketed by username
 
-__Request Body__
-
-The body must be a single JSON object with the following format.
-
-```json
-{
-  "text": "A small brown dog looks contentedly out over a lake"
-}
-```
-
-- `text`: The image description to be favorited. Must be at most 1000 UTF-8 codepoints long. Required.
-
 Always returns an `HTTP 202 Accepted`. If the rate limit is exceeded an `HTTP 429 Too Many Requests` will be returned.
 
 ---
