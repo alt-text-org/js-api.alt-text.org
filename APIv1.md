@@ -9,11 +9,59 @@ Concepts
 
 Alt-Text.org does not store any images, only text. That text is uniquely identified by a three part key:
 `(username-hash, image-hash, language)` this means that a given user may save only one description per image and
-language. In addition, searches may pass an *Image Signature*, a feature vector extracted from the image used to search
-for images that are very similar, but not exactly the same. Currently, the only signature algorithm supported is the one
-layed out in
-[An Image Signature For Any Kind Of Image](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.2585&rep=rep1&type=pdf)
-by Goldberg et al.
+language. In addition, searches may pass an *Image Histogram*, a feature vector extracted from the image used to search
+for images that are very similar, but not exactly the same.
+
+
+Protocol Definition
+-------------------
+
+All request and response objects are defined using Protocol Buffers. If you are implementing a client we *highly*
+suggest using those definitions. They can be found [on GitHub](https://github.com/alt-text-org/alt-text-protos).
+
+
+Image Histograms
+----------------
+
+The API uses image intensity histograms as one method of fuzzily-matching similar images. To calculate a histogram for
+submission:
+
+1. Calculate the scale factor to divide possible pixel intensities into 100 possible buckets, used to bucket values in
+   the range `[0, 765]`, where 765 is the max value of `(red + green + blue) * alpha` for a pixel.
+1. For each pixel in the array, calculate the intensity, scale the result, then increment the appropriate bucket.
+1. For each bucket, calculate the fraction of pixels in the image that are in that bucket as a 32bit float, they will
+   always be in the range `[0.0, 1.0]`
+1. Write the floats to a byte buffer in little-endian order
+1. URL-safe base64 encode the result.
+
+The Javascript client uses the following code:
+
+```js
+function getIntensityHist(image) {
+    const maxIntensity = 255 * 3
+    const buckets = 100
+
+    // Floor to two places, don't want to round so we don't accidentally round up.
+    const scale = Math.floor(buckets / maxIntensity * 100) / 100
+
+    let counts = new Array(100).fill(0)
+    let data = image.data
+
+    for (let i = 0; i < data.length; i += 4) {
+        let intensity = (data[i] + data[i + 1] + data[i + 2]) * (data[i + 3] / 255.0)
+        let bucket = Math.floor(intensity * scale)
+        counts[bucket]++
+    }
+
+    const pixels = data.length / 4
+    let floats = new Float32Array(100)
+    for (let i = 0; i < 100; i++) {
+        floats[i] = Math.fround(counts[i] / pixels)
+    }
+
+    return encodeURLSafe(new Uint8Array(floats.buffer))
+}
+```
 
 Authentication
 --------------
@@ -48,10 +96,12 @@ __Optional query parameters__:
 
 - `matches`: The number of matches to return, maximum is 20
 - `min_confidence`: A floating point number between 0.0 and 1.0 indicating the minimum match confidence
+- `ocr_url`: The URL-encoded publicly accessible address of the image being analyzed. If present, the backend will
+  attempt to OCR the image at the provided URL and return the text alongside the other results
 
 __Optional Headers__:
 
-- `X-Alt-Text-Org-Goldberg-Signature: <base64 image Goldberg et al. signature>`
+- `X-Alt-Text-Org-Intensity-Hist: <URL-safe base64 encoded histogram as descibed above>`
 
 __Rate Limit__
 
@@ -59,22 +109,30 @@ __Rate Limit__
 
 __Response body__:
 
-On success, an HTTP 200 OK status code will be returned with a response body JSON array of image description objects:
+On success, an HTTP 200 OK status code will be returned with a response body JSON object wrapping an array of image
+description objects:
 
 ```json
-[
-  {
-    "text": "A small brown dog looks contentedly out over a lake",
-    "language": "en",
-    "confidence": 1.0,
-    "times_used": 241,
-    "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
-    "user_hash": "9687abe53659b6a955e6dbdd16ac7631"
-  }
-]
+{
+  "extracted_text": "",
+  "texts": [
+    {
+      "text": "A small brown dog looks contentedly out over a lake",
+      "language": "en",
+      "confidence": 1.0,
+      "times_used": 241,
+      "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
+      "user_hash": "9687abe53659b6a955e6dbdd16ac7631"
+    }
+  ]
+}
 ```
 
-All fields are guaranteed to be present.
+If an `ocr_url` was specified, `extracted_text` may contain the text extracted from the image. No guarantees are made
+about the accuracy or length of the returned text. If `ocr_url` is not specified or if no text is found, the field will
+be missing or empty.
+
+All fields of individual texts are guaranteed to be present.
 
 - `text`: A UTF-8 description of the associated image. Guaranteed to be at most 1000 UTF-8 codepoints
 - `language`: The publisher-specified ISO-639-2 language code for the text
@@ -84,8 +142,8 @@ All fields are guaranteed to be present.
 - `image_hash`: The SHA256 hash of the bitmap of the described image
 - `user_hash`: The SHA256 hash of the author's username
 
-If no matching descriptions are found, an `HTTP 404 Not Found` will be returned. If the rate limit is exceeded
-an `HTTP 429 Too Many Requests` will be returned.
+If no matching descriptions are found and no text could be extracted, an `HTTP 404 Not Found` will be returned. If the
+rate limit is exceeded an `HTTP 429 Too Many Requests` will be returned.
 
 ---
 
@@ -104,7 +162,7 @@ __Required Headers__
 
 __Optional Headers__:
 
-- `X-Alt-Text-Org-Goldberg-Signature: <base64 image Goldberg et al. signature>`
+- `X-Alt-Text-Org-Intensity-Hist: <URL-safe base64 encoded histogram as descibed above>`
 
 __Rate Limit__
 
@@ -167,18 +225,21 @@ Gets all texts published by the requesting user.
 
 __Response Body__
 
-On success, an HTTP 200 OK status code will be returned with a response body JSON array of image description objects:
+On success, an HTTP 200 OK status code will be returned with a response body JSON object wrapping an array of user image
+description objects:
 
 ```json
-[
-  {
-    "text": "A small brown dog looks contentedly out over a lake",
-    "url": "https://example.com/mypic.jpg",
-    "language": "en",
-    "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
-    "public": true
-  }
-]
+{
+  "texts": [
+    {
+      "text": "A small brown dog looks contentedly out over a lake",
+      "url": "https://example.com/mypic.jpg",
+      "language": "en",
+      "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
+      "public": true
+    }
+  ]
+}
 ```
 
 All fields except `url` are guaranteed to be present.
@@ -206,17 +267,20 @@ Gets all texts favorited by the requesting user.
 
 __Response Body__
 
-On success, an HTTP 200 OK status code will be returned with a response body JSON array of image description objects:
+On success, an HTTP 200 OK status code will be returned with a response body JSON object wrapping and array of favorite
+image description objects:
 
 ```json
-[
-  {
-    "text": "A small brown dog looks contentedly out over a lake",
-    "language": "en",
-    "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
-    "user_hash": "9687abe53659b6a955e6dbdd16ac7631"
-  }
-]
+{
+  "texts": [
+    {
+      "text": "A small brown dog looks contentedly out over a lake",
+      "language": "en",
+      "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
+      "user_hash": "9687abe53659b6a955e6dbdd16ac7631"
+    }
+  ]
+}
 ```
 
 All fields are guaranteed to be present.
