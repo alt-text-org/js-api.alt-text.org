@@ -26,9 +26,8 @@ Image Histograms
 The API uses image intensity histograms as one method of fuzzily-matching similar images. To calculate a histogram for
 submission:
 
-1. Calculate the scale factor to divide possible pixel intensities into 100 possible buckets, used to bucket values in
-   the range `[0, 765]`, where 765 is the max value of `(red + green + blue) * alpha` for a pixel.
-1. For each pixel in the array, calculate the intensity, scale the result, then increment the appropriate bucket.
+1. For each pixel in the array, calculate the intensity, scale the result by `0.13` (see example for calculation), then
+   increment the appropriate bucket.
 1. For each bucket, calculate the fraction of pixels in the image that are in that bucket as a 32bit float, they will
    always be in the range `[0.0, 1.0]`
 1. Write the floats to a byte buffer in little-endian order
