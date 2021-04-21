@@ -82,7 +82,7 @@ endpoint.
 Endpoints
 ---------
 
-### GET /api/alt-text/public/v1/img/hash/{image_hash}/{language}
+### GET /api/alt-text/public/v1/img/search/{image_hash}/{language}
 
 Searches the library for descriptions for the specified image and image signature if one is specified.
 
@@ -121,7 +121,8 @@ description objects:
       "confidence": 1.0,
       "times_used": 241,
       "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
-      "user_hash": "9687abe53659b6a955e6dbdd16ac7631"
+      "user_hash": "9687abe53659b6a955e6dbdd16ac7631",
+      "favorited": false
     }
   ]
 }
@@ -139,14 +140,60 @@ All fields of individual texts are guaranteed to be present.
   1.0, where 0.0 indicates no confidence and 1.0 indicates that the image hashes were equal
 - `times_used`: How many times this description has been selected for use
 - `image_hash`: The SHA256 hash of the bitmap of the described image
-- `user_hash`: The SHA256 hash of the author's username
+- `user_hash`: The SHA256 hash of the author's username,
+- `favorited`: A boolean indicating whether the requesting user has favorited the description
 
 If no matching descriptions are found and no text could be extracted, an `HTTP 404 Not Found` will be returned. If the
 rate limit is exceeded an `HTTP 429 Too Many Requests` will be returned.
 
 ---
 
-### POST /api/alt-text/public/v1/img/hash/{image_hash}/{language}
+### GET /api/alt-text/public/v1/img/{image_hash}/{user_hash}/{language}
+
+Gets a single image description.
+
+__Required path parameters__:
+
+- `image_hash`:  The hex-encoded SHA256 hash of the bitmap representation of the image being searched
+- `user_hash`:  The hex-encoded SHA256 hash of the author's username
+- `language`: The ISO-639-2 language code for the search language
+
+__Rate Limit__
+
+12 calls/minute, bucketed by IP
+
+__Response body__:
+
+On success, an HTTP 200 OK status code will be returned with a response body JSON image description object:
+
+```json
+{
+  "text": "A small brown dog looks contentedly out over a lake",
+  "language": "en",
+  "confidence": 1.0,
+  "times_used": 241,
+  "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
+  "user_hash": "9687abe53659b6a955e6dbdd16ac7631",
+  "favorited": true
+}
+```
+
+All fields of individual texts are guaranteed to be present.
+
+- `text`: A UTF-8 description of the associated image. Guaranteed to be at most 1000 UTF-8 codepoints
+- `language`: The publisher-specified ISO-639-2 language code for the text
+- `confidence`: Always 1.0
+- `times_used`: How many times this description has been selected for use
+- `image_hash`: The SHA256 hash of the bitmap of the described image
+- `user_hash`: The SHA256 hash of the author's username
+- `favorited`: A boolean indicating whether the requesting user has favorited the description
+
+If no matching descriptions are found an `HTTP 404 Not Found` will be returned. If the rate limit is exceeded
+an `HTTP 429 Too Many Requests` will be returned.
+
+---
+
+### POST /api/alt-text/public/v1/img/{image_hash}/{language}
 
 Publishes an image description.
 
@@ -190,7 +237,7 @@ If another user has published the same description for the same image, the API m
 
 ---
 
-### DELETE /api/alt-text/public/v1/img/hash/{image_hash}/{language}
+### DELETE /api/alt-text/public/v1/img/{image_hash}/{language}
 
 Deletes the description authored by the calling user for the given image hash and language.
 
@@ -212,7 +259,7 @@ may not be immediately visible. If the rate limit is exceeded an `HTTP 429 Too M
 
 ---
 
-### GET /api/alt-text/public/v1/user
+### GET /api/alt-text/public/v1/img/user
 
 Gets all descriptions authored by the requesting user.
 
@@ -235,7 +282,8 @@ description objects:
       "url": "https://example.com/mypic.jpg",
       "language": "en",
       "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
-      "public": true
+      "public": true,
+      "favorited": false
     }
   ]
 }
@@ -248,13 +296,14 @@ All fields except `url` are guaranteed to be present.
 - `language`: The publisher-specified ISO-639-2 language code for the text
 - `image_hash`: The SHA256 hash of the bitmap of the described image
 - `public`: True if other users are allowed to see this description, false otherwise
+- `favorited`: A boolean indicating whether the requesting user has favorited the description
 
 If the user has no published descriptions, an `HTTP 404 Not Found` will be returned. If the rate limit is exceeded
 an `HTTP 429 Too Many Requests` will be returned.
 
 ---
 
-### GET /api/alt-text/public/v1/favorites
+### GET /api/alt-text/public/v1/img/favorites
 
 Gets all descriptions favorited by the requesting user
 
@@ -294,7 +343,7 @@ an `HTTP 429 Too Many Requests` will be returned.
 
 ---
 
-### POST /api/alt-text/public/v1/favorite/{image_hash}/{user_hash}/{language}
+### POST /api/alt-text/public/v1/img/favorite/{image_hash}/{user_hash}/{language}
 
 "Favorites" an image description. This stores the description for the user for quick access, as well as saving it for
 the user in case the original is modified or deleted. A user my have at most one description favorited for a given image
@@ -319,7 +368,7 @@ an `HTTP 429 Too Many Requests` will be returned.
 
 ---
 
-### DELETE /api/alt-text/public/v1/favorite/{image_hash}{user_hash}/{language}
+### DELETE /api/alt-text/public/v1/img/favorite/{image_hash}{user_hash}/{language}
 
 "Unfavorites" an image description.
 
@@ -341,7 +390,7 @@ Always returns an `HTTP 202 Accepted` unless a rate limit is hit. If the rate li
 an `HTTP 429 Too Many Requests` will be returned.
 ---
 
-### POST /api/alt-text/public/v1/report/{image_hash}/{user_hash}/{language}
+### POST /api/alt-text/public/v1/img/report/{image_hash}/{user_hash}/{language}
 
 Reports an issue with a given description.
 
@@ -371,7 +420,7 @@ Always returns an `HTTP 202 Accepted`. If the rate limit is exceeded an `HTTP 42
 
 ---
 
-### POST /api/alt-text/public/v1/mark/{image_hash}/{user_hash}/{language}
+### POST /api/alt-text/public/v1/img/mark/{image_hash}/{user_hash}/{language}
 
 Marks a given description as having been used.
 
