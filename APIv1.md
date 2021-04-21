@@ -82,7 +82,7 @@ endpoint.
 Endpoints
 ---------
 
-### GET /api/alt-text/public/v1/img/search/{image_hash}/{language}
+### GET /api/alt-text/public/v1/search/img/{image_hash}/{language}
 
 Searches the library for descriptions for the specified image and image signature if one is specified.
 
