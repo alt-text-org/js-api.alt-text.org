@@ -343,6 +343,38 @@ an `HTTP 429 Too Many Requests` will be returned.
 
 ---
 
+### GET /api/alt-text/public/v1/img/favorite/{image_hash}/{language}
+
+Gets the user's favorite description for a given image
+
+__Required path parameters__:
+
+- `image_hash`:  The hex-encoded SHA256 hash of the bitmap representation of the image
+- `language`: The ISO-639-2 language code for the description language
+
+__Rate Limit__
+
+12 calls/minute, bucketed by username
+
+__Response Body__
+
+On success, an HTTP 200 OK status code will be returned with a response body JSON object representing a favorite image
+description object:
+
+```json
+{
+  "text": "A small brown dog looks contentedly out over a lake",
+  "language": "en",
+  "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
+  "user_hash": "9687abe53659b6a955e6dbdd16ac7631"
+}
+```
+
+If the user has no favorited description, an `HTTP 404 Not Found` will be returned. If the rate limit is exceeded
+an `HTTP 429 Too Many Requests` will be returned.
+
+---
+
 ### POST /api/alt-text/public/v1/img/favorite/{image_hash}/{user_hash}/{language}
 
 "Favorites" an image description. This stores the description for the user for quick access, as well as saving it for
