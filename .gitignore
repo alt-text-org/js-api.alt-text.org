@@ -6,4 +6,4 @@ gradle/wrapper/gradle-wrapper.jar
 .env
 gradle.properties
 pinecone-client-dist
-old/src/main/java/io/pinecone
+/heuristics/src/main/java/io/pinecone/

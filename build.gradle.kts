@@ -4,7 +4,6 @@ plugins {
     kotlin("jvm") version "1.4.32"
     kotlin("plugin.serialization") version "1.4.32"
     id("com.google.cloud.tools.jib") version "2.5.0"
-    application
 }
 
 val kotlinxSerializationVersion by extra("0.20.0")
@@ -50,7 +49,7 @@ dependencies {
     implementation("com.google.oauth-client:google-oauth-client-jetty:1.31.2")
     implementation("com.google.cloud:google-cloud-secretmanager:1.4.2")
 
-    implementation("org.alt-text:alt-text-protos:0.6.0")
+    implementation("org.alt-text:alt-text-protos:0.6.1")
     implementation("com.github.streem.pbandk:pbandk-runtime-jvm:$pbandkVersion")
 
     /* Pinecone Deps */

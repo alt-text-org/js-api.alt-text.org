@@ -1,6 +1,7 @@
 include 'api-server'
-include 'pinecone'
 include 'storage'
 include 'mutation-consumer'
 include 'common'
+include 'twitter'
+include 'heuristics'
 
