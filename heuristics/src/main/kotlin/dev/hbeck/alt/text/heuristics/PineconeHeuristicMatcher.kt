@@ -1,10 +1,11 @@
 package dev.hbeck.alt.text.heuristics
 
+import com.google.inject.Inject
 import io.pinecone.PineconeClient
 import java.lang.RuntimeException
 
 
-class PineconeHeuristicMatcher(
+class PineconeHeuristicMatcher @Inject constructor(
     private val client: PineconeClient,
     private val connectionProvider: PineconeConnectionProvider,
     private val signatureParser: SignatureParser

@@ -12,6 +12,8 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
 
+    implementation("com.google.inject:guice:4.2.0")
+
     implementation("io.netty:netty-tcnative-boringssl-static:2.0.35.Final")
     implementation("io.grpc:grpc-protobuf:1.35.0")
     implementation("io.grpc:grpc-stub:1.35.0")

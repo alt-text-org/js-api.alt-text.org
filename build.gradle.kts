@@ -33,14 +33,16 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.72")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72")
     implementation("io.github.microutils:kotlin-logging:1.6.22")
+    implementation("javax.validation:validation-api:2.0.1.Final")
+    implementation("javax.ws.rs:javax.ws.rs-api:2.1.1")
 
     implementation("io.dropwizard:dropwizard-core:2.0.20")
     implementation("io.dropwizard:dropwizard-auth:2.0.20")
     implementation("com.nimbusds:oauth2-oidc-sdk:9.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0")
     implementation("org.glassfish.jersey.bundles.repackaged:jersey-guava:2.6")
+    implementation("com.google.guava:guava:30.1.1-jre")
 
-    implementation("io.lktk:blake3jni:0.2.2")
     implementation("com.github.seratch:signedrequest4j:2.14")
 
     implementation("com.google.inject:guice:4.2.0")
