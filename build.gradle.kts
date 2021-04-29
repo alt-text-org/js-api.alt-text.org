@@ -28,11 +28,6 @@ repositories {
     }
 }
 
-application {
-    mainClassName = "dev.hbeck.alt.text.AltTextServer"
-    applicationName = "AltTextServer"
-}
-
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
@@ -70,17 +65,4 @@ dependencies {
     testImplementation("org.mockito:mockito-core:2.22.0")
     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0")
     testImplementation("com.github.tdomzal:junit-docker-rule:0.4.1")
-}
-
-tasks {
-    compileJava {
-        enabled = false
-    }
-
-    withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
-            jvmTarget = "11"
-        }
-    }
 }
