@@ -4,6 +4,7 @@ import com.google.cloud.firestore.FieldValue
 import com.google.cloud.firestore.Firestore
 import com.google.inject.Inject
 import com.google.inject.Singleton
+import dev.hbeck.alt.text.proto.AltTextCoordinate
 import java.util.concurrent.TimeUnit
 
 
@@ -12,8 +13,8 @@ class FirestoreMarkStorage @Inject constructor(
     private val firestore: Firestore,
     private val configuration: FirestoreConfiguration
 ) : MarkStorage {
-    override fun incrementUsage(imgHash: String, userHash: String, increment: Long): Boolean {
-        val doc = firestore.collection(configuration.altTextCollection).document("$imgHash:$userHash")
+    override fun incrementUsage(coordinate: AltTextCoordinate, increment: Long): Boolean {
+        val doc = firestore.collection(configuration.altTextCollection).document(coordinate.toStringCoordinate())
 
         val result = try {
             doc.update(mapOf(FirestoreAltTextStorage.usageField to FieldValue.increment(increment)))

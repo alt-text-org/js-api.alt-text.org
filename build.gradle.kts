@@ -51,7 +51,7 @@ dependencies {
     implementation("com.google.oauth-client:google-oauth-client-jetty:1.31.2")
     implementation("com.google.cloud:google-cloud-secretmanager:1.4.2")
 
-    implementation("org.alt-text:alt-text-protos:0.6.1")
+    implementation("org.alt-text:alt-text-protos:0.6.4")
     implementation("com.github.streem.pbandk:pbandk-runtime-jvm:$pbandkVersion")
 
     /* Pinecone Deps */

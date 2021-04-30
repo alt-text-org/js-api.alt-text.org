@@ -6,9 +6,6 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.cloud.FirestoreClient
 import com.google.inject.AbstractModule
-import dev.hbeck.alt.text.admin.AltTextAdmin
-import dev.hbeck.alt.text.admin.LoggingAltTextAdmin
-import dev.hbeck.alt.text.retriever.Hasher
 import dev.hbeck.alt.text.storage.firestore.AsyncUsageMarker
 import dev.hbeck.alt.text.storage.firestore.FirestoreAltTextStorage
 import dev.hbeck.alt.text.storage.firestore.FirestoreConfiguration
@@ -26,9 +23,7 @@ class StorageModule(private val config: FirestoreConfiguration) : AbstractModule
         FirebaseApp.initializeApp(options)
 
         bind(Firestore::class.java).toInstance(FirestoreClient.getFirestore())
-        bind(Hasher::class.java).toInstance(Blake3Hasher())
 
-        bind(AltTextAdmin::class.java).to(LoggingAltTextAdmin::class.java)
         bind(UsageMarker::class.java).to(AsyncUsageMarker::class.java)
         bind(MarkStorage::class.java).to(FirestoreMarkStorage::class.java)
         bind(AltTextStorage::class.java).to(FirestoreAltTextStorage::class.java)

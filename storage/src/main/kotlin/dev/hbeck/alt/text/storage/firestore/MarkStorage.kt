@@ -1,6 +1,8 @@
 package dev.hbeck.alt.text.storage.firestore
 
+import dev.hbeck.alt.text.proto.AltTextCoordinate
+
 
 interface MarkStorage {
-    fun incrementUsage(imgHash: String, userHash: String, increment: Long): Boolean
+    fun incrementUsage(coordinate: AltTextCoordinate, increment: Long): Boolean
 }

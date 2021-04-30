@@ -233,8 +233,6 @@ The body must be a single JSON object with the following format.
 On success, an `HTTP 202 Accepted` status will be returned. Note that description publication is asynchronous and may
 not be immediately visible. If the rate limit is exceeded an `HTTP 429 Too Many Requests` will be returned.
 
-If another user has published the same description for the same image, the API may respond with an `HTTP 409 Conflict`
-
 ---
 
 ### DELETE /api/alt-text/public/v1/img/{image_hash}/{language}
