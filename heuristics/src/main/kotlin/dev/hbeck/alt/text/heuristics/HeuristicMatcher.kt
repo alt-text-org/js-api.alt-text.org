@@ -10,5 +10,5 @@ enum class HeuristicType(val vectorLength: Int?) {
 interface HeuristicMatcher {
     fun matchHeuristic(type: HeuristicType, signature: String, language: String, matches: Int): Map<AltTextCoordinate, Float>
 
-    fun addSignature(type: HeuristicType, coordinate: AltTextCoordinate, signature: String)
+    fun addSignature(type: HeuristicType, coordinate: AltTextCoordinate, signature: String): Boolean
 }

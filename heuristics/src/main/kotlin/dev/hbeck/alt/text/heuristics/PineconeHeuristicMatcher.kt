@@ -3,8 +3,11 @@ package dev.hbeck.alt.text.heuristics
 import com.google.inject.Inject
 import dev.hbeck.alt.text.proto.AltTextCoordinate
 import io.pinecone.PineconeClient
+import mu.KotlinLogging
+import java.lang.Exception
 import java.lang.RuntimeException
 
+val log = KotlinLogging.logger{}
 
 class PineconeHeuristicMatcher @Inject constructor(
     private val client: PineconeClient,
@@ -36,7 +39,7 @@ class PineconeHeuristicMatcher @Inject constructor(
         }
     }
 
-    override fun addSignature(type: HeuristicType, coordinate: AltTextCoordinate, signature: String) {
+    override fun addSignature(type: HeuristicType, coordinate: AltTextCoordinate, signature: String): Boolean {
         val signatureVector = signatureParser.parseSignature(signature, type.vectorLength)
 
         val request = client.upsertRequest()
@@ -44,7 +47,13 @@ class PineconeHeuristicMatcher @Inject constructor(
             .ids(listOf(coordinate.toStringCoordinate()))
             .namespace(getNamespace(type, coordinate.language))
 
-        connectionProvider.getConnection().send(request)
+        return try {
+            connectionProvider.getConnection().send(request)
+            true;
+        } catch (e: Exception) {
+            log.error(e) { "Failed to write signature for coordinate $coordinate and heuristic type $type" }
+            false
+        }
     }
 
     private fun getNamespace(heuristicType: HeuristicType, language: String): String {

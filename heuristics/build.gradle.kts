@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":common"))
 
     implementation("com.google.inject:guice:${Versions.guice}")
+    implementation("io.github.microutils:kotlin-logging:${Versions.kotlinLogging}")
 
     implementation("io.netty:netty-tcnative-boringssl-static:${Versions.nettyTcnativeBoringSSL}")
     implementation("io.grpc:grpc-protobuf:${Versions.grpc}")

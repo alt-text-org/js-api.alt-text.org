@@ -12,7 +12,6 @@ class DualMatchManager @Inject constructor(
     private val hasher: Hasher
 ) : MatchManager {
 
-    private val identiferFormat = "(\\w+):(\\w+)".toRegex()
     override fun getMatchingTexts(
         imageHash: String,
         signature: String,
