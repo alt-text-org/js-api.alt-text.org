@@ -8,7 +8,7 @@ import dev.hbeck.alt.text.http.ratelimits.RateLimited
 import dev.hbeck.alt.text.storage.AltTextStorage
 import dev.hbeck.alt.text.storage.AltTextWriteResult
 import dev.hbeck.alt.text.proto.*
-import dev.hbeck.alt.text.retriever.Hasher
+import dev.hbeck.alt.text.hashing.Hasher
 import dev.hbeck.alt.text.retriever.MatchManager
 import io.dropwizard.auth.Auth
 import java.net.URL

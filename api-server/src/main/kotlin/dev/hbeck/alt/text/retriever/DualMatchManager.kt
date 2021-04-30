@@ -1,15 +1,16 @@
 package dev.hbeck.alt.text.retriever
 
-import dev.hbeck.alt.text.lookup.SignatureMatcher
+import dev.hbeck.alt.text.heuristics.HeuristicMatcher
+import dev.hbeck.alt.text.heuristics.HeuristicType
+import dev.hbeck.alt.text.proto.InternalAltText
 import dev.hbeck.alt.text.proto.RetrievedAltText
-import dev.hbeck.alt.text.storage.AltTextStorage
+import dev.hbeck.alt.text.storage.AltTextRetriever
 import javax.inject.Inject
 
 
 class DualMatchManager @Inject constructor(
-    private val signatureMatcher: SignatureMatcher,
-    private val altTextStorage: AltTextStorage,
-    private val hasher: Hasher
+    private val altTextRetriever: AltTextRetriever,
+    private val heuristicMatcher: HeuristicMatcher
 ) : MatchManager {
 
     override fun getMatchingTexts(
@@ -17,57 +18,37 @@ class DualMatchManager @Inject constructor(
         signature: String,
         language: String,
         matches: Int
-    ): Map<String, RetrievedAltText> {
-        val altTextForImage = altTextStorage.getAltTextForImage(imageHash, language)
-        if (altTextForImage.size >= matches) {
-            return altTextForImage
+    ): List<RetrievedAltText> {
+        val exactMatches = altTextRetriever.search(imageHash, language, matches)
+            .map { internalTextToRetrieved(it, 1.0F) }
+
+        if (exactMatches.size >= matches) {
+            return exactMatches
         }
 
-        val remainingToFetch = matches - altTextForImage.size
-        val goldbergMatches = signatureMatcher.getGoldbergMatches(
+        val remainingToFetch = matches - exactMatches.size
+        val intensityHistMatches = heuristicMatcher.matchHeuristic(
+            type = HeuristicType.INTENSITY_HISTOGRAM,
             signature = signature,
-            matches = remainingToFetch,
-            language = language
+            language = language,
+            matches = remainingToFetch
         )
 
-        if (goldbergMatches.isNotEmpty()) {
-            val mutableMatches = altTextForImage.toMutableMap()
-            goldbergMatches.forEach { (identifier, confidence) ->
-                val (foundImageHash, userHash) = identiferFormat.find(identifier)?.destructured
-                    ?: throw RuntimeException("Got malformed identifier from matcher: $identifier")
-                altTextStorage.getAltText(foundImageHash, userHash)?.apply {
-                    mutableMatches[userHash] = RetrievedAltText(
-                        text = text,
-                        language = language,
-                        confidence = confidence,
-                        timesUsed = timesUsed
-                    )
-                }
-            }
-            return mutableMatches
-        } else {
-            return altTextForImage
-        }
+        val heuristicMatches: List<RetrievedAltText> = intensityHistMatches.map { (coordinate, distance) ->
+            altTextRetriever.getAltText(coordinate)?.let { internalTextToRetrieved(it, distance) }
+        }.filterNotNull()
+
+        return exactMatches + heuristicMatches
     }
 
-    override fun addAltTextMatch(
-        imageHash: String,
-        username: String,
-        altText: String,
-        url: String?,
-        signature: String,
-        language: String
-    ) {
-        val usernameHash = hasher.hash(username)
-        altTextStorage.addAltTextAsync(
-            imgHash = imageHash,
-            userHash = usernameHash,
-            username = username,
-            altText = altText,
-            language = language,
-            url = url
+    private fun internalTextToRetrieved(internalAltText: InternalAltText, distance: Float): RetrievedAltText {
+        return RetrievedAltText(
+            imageHash = internalAltText.coordinate!!.imageHash,
+            userHash = internalAltText.coordinate!!.userHash,
+            language = internalAltText.coordinate!!.language,
+            text = internalAltText.text,
+            timesUsed = internalAltText.timesUsed,
+            distance = distance
         )
-
-        signatureMatcher.addGoldbergSignature("$imageHash:$usernameHash", signature, language)
     }
 }

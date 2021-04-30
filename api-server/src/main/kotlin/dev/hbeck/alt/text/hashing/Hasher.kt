@@ -1,4 +1,4 @@
-package dev.hbeck.alt.text.retriever
+package dev.hbeck.alt.text.hashing
 
 
 interface Hasher {
