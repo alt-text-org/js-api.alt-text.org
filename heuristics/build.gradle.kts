@@ -1,10 +1,9 @@
+import dev.hbeck.alt.text.shared.Versions
+
 plugins {
     java
-    kotlin("jvm")
+    id("org.jetbrains.kotlin.jvm") version "1.5.0"
 }
-
-version = "unspecified"
-val pbandkVersion by extra("0.8.1")
 
 repositories {
     mavenCentral()
@@ -24,21 +23,21 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
 
-    project(":common")
+    implementation(project(":common"))
 
-    implementation("com.google.inject:guice:4.2.0")
+    implementation("com.google.inject:guice:${Versions.guice}")
 
-    implementation("io.netty:netty-tcnative-boringssl-static:2.0.35.Final")
-    implementation("io.grpc:grpc-protobuf:1.35.0")
-    implementation("io.grpc:grpc-stub:1.35.0")
-    implementation("io.grpc:grpc-netty:1.35.0")
-    implementation("org.slf4j:slf4j-api:1.7.30")
+    implementation("io.netty:netty-tcnative-boringssl-static:${Versions.nettyTcnativeBoringSSL}")
+    implementation("io.grpc:grpc-protobuf:${Versions.grpc}")
+    implementation("io.grpc:grpc-stub:${Versions.grpc}")
+    implementation("io.grpc:grpc-netty:${Versions.grpc}")
+    implementation("org.slf4j:slf4j-api:${Versions.slf4j}")
 
-    implementation("org.alt-text:alt-text-protos:0.6.4")
-    implementation("com.github.streem.pbandk:pbandk-runtime-jvm:$pbandkVersion")
+    implementation("org.alt-text:alt-text-protos:${Versions.altTextProtos}")
+    implementation("com.github.streem.pbandk:pbandk-runtime-jvm:${Versions.pbandk}")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.jupiter}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.jupiter}")
 }
 
 tasks.getByName<Test>("test") {

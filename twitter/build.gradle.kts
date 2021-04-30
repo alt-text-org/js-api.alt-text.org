@@ -1,10 +1,8 @@
+import dev.hbeck.alt.text.shared.Versions
+
 plugins {
-    kotlin("jvm")
+    id("org.jetbrains.kotlin.jvm") version "1.5.0"
 }
-
-version = "unspecified"
-
-val kotlinxSerializationVersion by extra("0.20.0")
 
 repositories {
     mavenCentral()
@@ -23,19 +21,20 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.72")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72")
-    implementation("io.github.microutils:kotlin-logging:1.6.22")
-    implementation("javax.validation:validation-api:2.0.1.Final")
-    implementation("javax.ws.rs:javax.ws.rs-api:2.1.1")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:${Versions.kotlinxSerialization}")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlinStdlib}")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlinStdlib}")
+    implementation("io.github.microutils:kotlin-logging:${Versions.kotlinLogging}")
+    implementation("javax.validation:validation-api:${Versions.javaxValidation}")
+    implementation("javax.ws.rs:javax.ws.rs-api:${Versions.javaxWsRs}")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jacksonModule}")
 
-    implementation("org.alt-text:alt-text-protos:0.6.1")
+    implementation("org.alt-text:alt-text-protos:${Versions.altTextProtos}")
+    implementation("com.github.streem.pbandk:pbandk-runtime-jvm:${Versions.pbandk}")
 
-    implementation("com.google.inject:guice:4.2.0")
-    implementation("com.google.guava:guava:30.1.1-jre")
-    implementation("com.google.cloud:google-cloud-secretmanager:1.4.2")
+    implementation("com.google.inject:guice:${Versions.guice}")
+    implementation("com.google.guava:guava:${Versions.guava}")
+    implementation("com.google.cloud:google-cloud-secretmanager:${Versions.googleCloudSecretManager}")
 
-    implementation("com.github.seratch:signedrequest4j:2.14")
+    implementation("com.github.seratch:signedrequest4j:${Versions.signedRequest4j}")
 }

@@ -1,9 +1,8 @@
-plugins {
-    kotlin("jvm")
-}
+import dev.hbeck.alt.text.shared.Versions
 
-version = "unspecified"
-val pbandkVersion by extra("0.8.1")
+plugins {
+    id("org.jetbrains.kotlin.jvm") version "1.5.0"
+}
 
 repositories {
     mavenCentral()
@@ -23,6 +22,6 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
 
-    implementation("org.alt-text:alt-text-protos:0.6.4")
-    implementation("com.github.streem.pbandk:pbandk-runtime-jvm:$pbandkVersion")
+    implementation("org.alt-text:alt-text-protos:${Versions.altTextProtos}")
+    implementation("com.github.streem.pbandk:pbandk-runtime-jvm:${Versions.pbandk}")
 }

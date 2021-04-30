@@ -1,9 +1,8 @@
-plugins {
-    kotlin("jvm")
-}
+import dev.hbeck.alt.text.shared.Versions
 
-version = "unspecified"
-val pbandkVersion by extra("0.8.1")
+plugins {
+    id("org.jetbrains.kotlin.jvm") version "1.5.0"
+}
 
 repositories {
     mavenCentral()
@@ -22,16 +21,19 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("io.github.microutils:kotlin-logging:1.6.22")
-    implementation("javax.validation:validation-api:2.0.1.Final")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0")
 
-    implementation("com.google.inject:guice:4.2.0")
-    implementation("com.google.firebase:firebase-admin:7.1.1")
-    implementation("com.google.oauth-client:google-oauth-client:1.31.2")
-    implementation("com.google.oauth-client:google-oauth-client-jetty:1.31.2")
-    implementation("com.google.cloud:google-cloud-secretmanager:1.4.2")
+    implementation(project(":common"))
 
-    implementation("org.alt-text:alt-text-protos:0.6.4")
-    implementation("com.github.streem.pbandk:pbandk-runtime-jvm:$pbandkVersion")
+    implementation("io.github.microutils:kotlin-logging:${Versions.kotlinLogging}")
+    implementation("javax.validation:validation-api:${Versions.javaxValidation}")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jacksonModule}")
+
+    implementation("com.google.inject:guice:${Versions.guice}")
+    implementation("com.google.firebase:firebase-admin:${Versions.firebaseAdmin}")
+    implementation("com.google.oauth-client:google-oauth-client:${Versions.googleOauthClient}")
+    implementation("com.google.oauth-client:google-oauth-client-jetty:${Versions.googleOauthClient}")
+    implementation("com.google.cloud:google-cloud-secretmanager:${Versions.googleCloudSecretManager}")
+
+    implementation("org.alt-text:alt-text-protos:${Versions.altTextProtos}")
+    implementation("com.github.streem.pbandk:pbandk-runtime-jvm:${Versions.pbandk}")
 }
