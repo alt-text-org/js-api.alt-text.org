@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger
 private val log = KotlinLogging.logger {}
 
 class QueuingUserActionHandler @Inject constructor(
-    @Named("queuingHandler") actualHandler: UserActionHandler,
+    @Named("storageHandler") actualHandler: UserActionHandler,
     private val configuration: MutationHandlerConfiguration
 ) : UserActionHandler, Closeable {
 

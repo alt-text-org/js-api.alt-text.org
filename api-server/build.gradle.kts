@@ -32,11 +32,17 @@ dependencies {
     implementation("javax.validation:validation-api:${Versions.javaxValidation}")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jacksonModule}")
 
+    implementation("javax.ws.rs:javax.ws.rs-api:${Versions.javaxWsRs}")
+    implementation("io.dropwizard:dropwizard-core:${Versions.dropwizard}")
+    implementation("io.dropwizard:dropwizard-auth:${Versions.dropwizard}")
+    implementation("com.nimbusds:oauth2-oidc-sdk:${Versions.nimbusOauth}")
+
     implementation("com.google.inject:guice:${Versions.guice}")
     implementation("com.google.firebase:firebase-admin:${Versions.firebaseAdmin}")
     implementation("com.google.oauth-client:google-oauth-client:${Versions.googleOauthClient}")
     implementation("com.google.oauth-client:google-oauth-client-jetty:${Versions.googleOauthClient}")
     implementation("com.google.cloud:google-cloud-secretmanager:${Versions.googleCloudSecretManager}")
+    implementation("com.google.cloud:google-cloud-vision:${Versions.googleVisionClient}")
 
     implementation("org.alt-text:alt-text-protos:${Versions.altTextProtos}")
     implementation("com.github.streem.pbandk:pbandk-runtime-jvm:${Versions.pbandk}")

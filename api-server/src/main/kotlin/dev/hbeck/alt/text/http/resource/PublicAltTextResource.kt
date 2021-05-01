@@ -1,5 +1,6 @@
 package dev.hbeck.alt.text.http.resource
 
+import com.google.inject.name.Named
 import dev.hbeck.alt.text.admin.AltTextAdmin
 import dev.hbeck.alt.text.http.auth.principal.UserPrincipal
 import dev.hbeck.alt.text.http.ratelimits.RateLimitScopeExtractor.IP
@@ -9,7 +10,11 @@ import dev.hbeck.alt.text.storage.AltTextStorage
 import dev.hbeck.alt.text.storage.AltTextWriteResult
 import dev.hbeck.alt.text.proto.*
 import dev.hbeck.alt.text.hashing.Hasher
+import dev.hbeck.alt.text.mutation.MutationHandlerConfiguration
+import dev.hbeck.alt.text.mutation.UserActionHandler
+import dev.hbeck.alt.text.ocr.OcrManager
 import dev.hbeck.alt.text.retriever.MatchManager
+import dev.hbeck.alt.text.storage.AltTextRetriever
 import io.dropwizard.auth.Auth
 import java.net.URL
 import java.util.*
@@ -27,14 +32,20 @@ import javax.ws.rs.core.SecurityContext
 @Path("/api/alt-text/public/v1")
 @PermitAll
 class PublicAltTextResource @Inject constructor(
-    private val storage: AltTextStorage,
+    @Named("queuingHandler") private val userActionHandler: UserActionHandler,
+    private val retriever: AltTextRetriever,
     private val matchManager: MatchManager,
-    private val admin: AltTextAdmin,
+    private val ocrManager: OcrManager,
     private val hasher: Hasher
 ) {
+
     companion object {
-        private const val signatureHeader = "X-Alt-Text-Org-Goldberg-Signature"
-        private const val maxMatches = 10
+        private const val intensityHistHeader = "X-Alt-Text-Org-Intensity-Hist"
+        private const val timestampHeader = "X-Alt-Text-Org-Timestamp"
+        private const val maxMatches = "20"
+        private const val maxDistance = "100.0"
+
+        private val maxMatchesInt = maxMatches.toInt()
     }
 
     @Context
@@ -42,23 +53,31 @@ class PublicAltTextResource @Inject constructor(
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/img/hash/{img_hash}")
+    @Path("/search/img/{image_hash}/{language}")
     @RateLimited("GET_ALT_TEXT", 0.20, IP)
-    fun getAltTextForImage(
-        @PathParam("img_hash") imgHash: String,
-        @QueryParam("lang") language: String,
-        @QueryParam("matches") matches: Int,
-        @HeaderParam(signatureHeader) signature: String
+    fun search(
+        @PathParam("image_hash") imgHash: String,
+        @PathParam("language") language: String,
+        @DefaultValue(maxMatches) @QueryParam("matches") matches: Int,
+        @DefaultValue("") @QueryParam("ocr_url") ocrUrl: String,
+        @DefaultValue("100.0") @QueryParam("max_distance") maxDistance: Float,
+        @DefaultValue("") @HeaderParam(intensityHistHeader) intensityHist: String
     ): GetAltTextsForImageResponse {
         if (language.length != 2 || Locale.forLanguageTag(language) == null) {
             throw BadRequestException("""{"reason": "Unknown ISO 639-2 language code: '$language'"}""")
-        } else if (matches > maxMatches) {
+        } else if (matches > maxMatchesInt) {
             throw BadRequestException("""{"reason": "Only $maxMatches may be requested"}""")
+        }
+
+        val heuristics = if (intensityHist.isNotEmpty()) {
+            Heuristics(intensityHist = intensityHist)
+        } else {
+            null
         }
 
         val texts = matchManager.getMatchingTexts(
             imageHash = imgHash,
-            signature = signature,
+            heuristics = heuristics,
             language = language,
             matches = matches
         )
@@ -67,8 +86,15 @@ class PublicAltTextResource @Inject constructor(
             throw NotFoundException()
         }
 
+        val extracted = if (ocrUrl.isNotEmpty()) {
+            ocrManager.attemptOcr(ocrUrl)
+        } else {
+            listOf()
+        }
+
         return GetAltTextsForImageResponse(
-            texts = texts
+            texts = texts,
+            extractedText = extracted
         )
     }
 

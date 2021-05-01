@@ -2,6 +2,7 @@ package dev.hbeck.alt.text.retriever
 
 import dev.hbeck.alt.text.heuristics.HeuristicMatcher
 import dev.hbeck.alt.text.heuristics.HeuristicType
+import dev.hbeck.alt.text.proto.Heuristics
 import dev.hbeck.alt.text.proto.InternalAltText
 import dev.hbeck.alt.text.proto.RetrievedAltText
 import dev.hbeck.alt.text.storage.AltTextRetriever
@@ -15,7 +16,7 @@ class DualMatchManager @Inject constructor(
 
     override fun getMatchingTexts(
         imageHash: String,
-        signature: String,
+        heuristics: Heuristics?,
         language: String,
         matches: Int
     ): List<RetrievedAltText> {
@@ -26,17 +27,21 @@ class DualMatchManager @Inject constructor(
             return exactMatches
         }
 
-        val remainingToFetch = matches - exactMatches.size
-        val intensityHistMatches = heuristicMatcher.matchHeuristic(
-            type = HeuristicType.INTENSITY_HISTOGRAM,
-            signature = signature,
-            language = language,
-            matches = remainingToFetch
-        )
+        val heuristicMatches: List<RetrievedAltText> = if (heuristics != null) {
+            val remainingToFetch = matches - exactMatches.size
+            val intensityHistMatches = heuristicMatcher.matchHeuristic(
+                type = HeuristicType.INTENSITY_HISTOGRAM,
+                signature = heuristics.intensityHist,
+                language = language,
+                matches = remainingToFetch
+            )
 
-        val heuristicMatches: List<RetrievedAltText> = intensityHistMatches.map { (coordinate, distance) ->
-            altTextRetriever.getAltText(coordinate)?.let { internalTextToRetrieved(it, distance) }
-        }.filterNotNull()
+            intensityHistMatches.map { (coordinate, distance) ->
+                altTextRetriever.getAltText(coordinate)?.let { internalTextToRetrieved(it, distance) }
+            }.filterNotNull()
+        } else {
+            listOf()
+        }
 
         return exactMatches + heuristicMatches
     }
