@@ -9,6 +9,7 @@ interface MatchManager {
         imageHash: String,
         heuristics: Heuristics?,
         language: String,
-        matches: Int
+        matches: Int,
+        includePrivate: Boolean
     ): List<RetrievedAltText>
 }

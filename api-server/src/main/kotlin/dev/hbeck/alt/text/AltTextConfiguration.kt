@@ -12,4 +12,6 @@ class AltTextConfiguration(
     @Valid @JsonProperty("auth") val authConfiguration: AuthConfiguration,
     @Valid @JsonProperty("firestore") val firestoreConfig: FirestoreConfiguration,
     @Valid @JsonProperty("twitter") val twitterConfig: TwitterConfiguration,
+    @Valid @JsonProperty("minTextLength") val minTextLength: Int,
+    @Valid @JsonProperty("maxTextLength") val maxTextLength: Int
 ) : Configuration()

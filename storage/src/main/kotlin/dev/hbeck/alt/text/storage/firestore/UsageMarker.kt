@@ -1,6 +1,8 @@
 package dev.hbeck.alt.text.storage.firestore
 
+import dev.hbeck.alt.text.proto.AltTextCoordinate
+
 
 interface UsageMarker {
-    fun markUsage(imgHash: String, userHash: String)
+    fun markUsage(coordinate: AltTextCoordinate)
 }

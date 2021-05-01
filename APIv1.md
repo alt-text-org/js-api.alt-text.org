@@ -94,7 +94,6 @@ __Required path parameters__:
 __Optional query parameters__:
 
 - `matches`: The number of matches to return, maximum is 20
-- `min_confidence`: A floating point number between 0.0 and 1.0 indicating the minimum match confidence
 - `ocr_url`: The URL-encoded publicly accessible address of the image being analyzed. If present, the backend will
   attempt to OCR the image at the provided URL and return the text alongside the other results
 
@@ -113,7 +112,12 @@ description objects:
 
 ```json
 {
-  "extracted_text": "",
+  "extracted_text": [
+    {
+      "language": "en",
+      "text": "Some text from a sign"
+    }
+  ],
   "texts": [
     {
       "text": "A small brown dog looks contentedly out over a lake",
@@ -297,46 +301,6 @@ All fields except `url` are guaranteed to be present.
 - `favorited`: A boolean indicating whether the requesting user has favorited the description
 
 If the user has no published descriptions, an `HTTP 404 Not Found` will be returned. If the rate limit is exceeded
-an `HTTP 429 Too Many Requests` will be returned.
-
----
-
-### GET /api/alt-text/public/v1/img/favorites
-
-Gets all descriptions favorited by the requesting user
-
-__Rate Limit__
-
-6 calls/minute
-
-Gets all texts favorited by the requesting user.
-
-__Response Body__
-
-On success, an HTTP 200 OK status code will be returned with a response body JSON object wrapping and array of favorite
-image description objects:
-
-```json
-{
-  "texts": [
-    {
-      "text": "A small brown dog looks contentedly out over a lake",
-      "language": "en",
-      "image_hash": "c2850ea37e0976bbb2ecc89f3a1895da",
-      "user_hash": "9687abe53659b6a955e6dbdd16ac7631"
-    }
-  ]
-}
-```
-
-All fields are guaranteed to be present.
-
-- `text`: A UTF-8 description of the associated image. Guaranteed to be at most 1000 UTF-8 codepoints
-- `language`: The publisher-specified ISO-639-2 language code for the text
-- `image_hash`: The SHA256 hash of the bitmap of the described image
-- `user_hash`: The SHA256 hash of the author's username
-
-If the user has no favorited descriptions, an `HTTP 404 Not Found` will be returned. If the rate limit is exceeded
 an `HTTP 429 Too Many Requests` will be returned.
 
 ---
