@@ -3,7 +3,7 @@ package dev.hbeck.alt.text.storage.firestore
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.QuerySnapshot
 import com.google.inject.Inject
-import dev.hbeck.alt.text.heuristics.toStringCoordinate
+import dev.hbeck.alt.text.common.toStringCoordinate
 import dev.hbeck.alt.text.proto.*
 import dev.hbeck.alt.text.storage.AltTextMutator
 import dev.hbeck.alt.text.storage.AltTextRetriever

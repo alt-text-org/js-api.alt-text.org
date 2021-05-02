@@ -1,7 +1,9 @@
 package dev.hbeck.alt.text
 
 import com.google.inject.AbstractModule
+import dev.hbeck.alt.text.heuristics.HeuristicsConfiguration
 import dev.hbeck.alt.text.http.auth.AuthConfiguration
+import dev.hbeck.alt.text.mutation.MutationHandlerConfiguration
 import dev.hbeck.alt.text.storage.firestore.FirestoreConfiguration
 import dev.hbeck.alt.text.twitter.TwitterConfiguration
 
@@ -12,5 +14,7 @@ class ConfigModule(private val config: AltTextConfiguration): AbstractModule() {
         bind(TwitterConfiguration::class.java).toInstance(config.twitterConfig)
         bind(FirestoreConfiguration::class.java).toInstance(config.firestoreConfig)
         bind(AuthConfiguration::class.java).toInstance(config.authConfiguration)
+        bind(HeuristicsConfiguration::class.java).toInstance(config.heuristicsConfig)
+        bind(MutationHandlerConfiguration::class.java).toInstance(config.mutationHandlerConfig)
     }
 }

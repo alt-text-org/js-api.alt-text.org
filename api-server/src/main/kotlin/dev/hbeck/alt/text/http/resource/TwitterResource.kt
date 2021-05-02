@@ -2,7 +2,7 @@ package dev.hbeck.alt.text.http.resource
 
 import dev.hbeck.alt.text.http.ratelimits.RateLimitScopeExtractor
 import dev.hbeck.alt.text.http.ratelimits.RateLimited
-import dev.hbeck.alt.text.twitter.TwitterAnalyzer
+import dev.hbeck.alt.text.twitter.DirectTwitterAnalyzer
 import dev.hbeck.alt.text.proto.TwitterAnalysis
 import javax.annotation.security.PermitAll
 import javax.inject.Inject
@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType
 @Singleton
 @Path("/api/twitter/v1")
 @PermitAll
-class TwitterResource @Inject constructor(private val analyzer: TwitterAnalyzer) {
+class TwitterResource @Inject constructor(private val analyzer: DirectTwitterAnalyzer) {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

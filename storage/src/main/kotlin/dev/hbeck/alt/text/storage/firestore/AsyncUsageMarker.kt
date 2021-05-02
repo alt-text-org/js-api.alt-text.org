@@ -12,7 +12,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
 import kotlin.concurrent.withLock
+import kotlin.concurrent.write
 
 @Singleton
 class AsyncUsageMarker @Inject constructor(
@@ -23,7 +26,7 @@ class AsyncUsageMarker @Inject constructor(
     private val acceptMarks = AtomicBoolean(true)
     private val increments = AtomicReference<ConcurrentHashMap<AltTextCoordinate, AtomicLong>>(ConcurrentHashMap())
     private val flusher = Executors.newSingleThreadScheduledExecutor()
-    private val flushLock = ReentrantLock()
+    private val flushLock = ReentrantReadWriteLock()
 
     init {
         flusher.scheduleAtFixedRate(
@@ -39,13 +42,13 @@ class AsyncUsageMarker @Inject constructor(
             throw IllegalStateException("Shutting down")
         }
 
-        flushLock.withLock {
+        flushLock.read {
             increments.get().computeIfAbsent(coordinate) { AtomicLong(0) }.incrementAndGet()
         }
     }
 
     private fun flush() {
-        val batch = flushLock.withLock {
+        val batch = flushLock.write {
             increments.getAndSet(ConcurrentHashMap())
         }
 

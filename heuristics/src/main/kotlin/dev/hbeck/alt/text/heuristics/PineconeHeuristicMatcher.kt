@@ -1,17 +1,17 @@
 package dev.hbeck.alt.text.heuristics
 
 import com.google.inject.Inject
+import dev.hbeck.alt.text.common.fromStringCoordinate
+import dev.hbeck.alt.text.common.toStringCoordinate
 import dev.hbeck.alt.text.proto.AltTextCoordinate
-import io.pinecone.PineconeClient
 import mu.KotlinLogging
 import java.lang.Exception
 import java.lang.RuntimeException
 
-val log = KotlinLogging.logger{}
+val log = KotlinLogging.logger {}
 
 class PineconeHeuristicMatcher @Inject constructor(
-    private val client: PineconeClient,
-    private val connectionProvider: PineconeConnectionProvider,
+    private val pineconeProvider: PineconeProvider,
     private val signatureParser: SignatureParser
 ) : HeuristicMatcher {
 
@@ -24,13 +24,13 @@ class PineconeHeuristicMatcher @Inject constructor(
         val signatureVector = signatureParser.parseSignature(signature, type.vectorLength)
         val requestVector = Array(1) { signatureVector }
 
-        val request = client.queryRequest()
+        val request = pineconeProvider.getClient().queryRequest()
             .data(requestVector)
             .namespace(getNamespace(type, language))
             .includeData(false)
             .topK(matches)
 
-        val response = connectionProvider.getConnection().send(request)
+        val response = pineconeProvider.getConnection().send(request)
         return when (val responseSize = response.queryResults.size) {
             0 -> mapOf()
             1 -> response.queryResults[0].ids.zip(response.queryResults[0].scores)
@@ -42,14 +42,14 @@ class PineconeHeuristicMatcher @Inject constructor(
     override fun addSignature(type: HeuristicType, coordinate: AltTextCoordinate, signature: String): Boolean {
         val signatureVector = signatureParser.parseSignature(signature, type.vectorLength)
 
-        val request = client.upsertRequest()
+        val request = pineconeProvider.getClient().upsertRequest()
             .data(Array(1) { signatureVector })
             .ids(listOf(coordinate.toStringCoordinate()))
             .namespace(getNamespace(type, coordinate.language))
 
         return try {
-            connectionProvider.getConnection().send(request)
-            true;
+            pineconeProvider.getConnection().send(request)
+            true
         } catch (e: Exception) {
             log.error(e) { "Failed to write signature for coordinate $coordinate and heuristic type $type" }
             false

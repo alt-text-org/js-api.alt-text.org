@@ -4,7 +4,7 @@ import com.google.cloud.firestore.FieldValue
 import com.google.cloud.firestore.Firestore
 import com.google.inject.Inject
 import com.google.inject.Singleton
-import dev.hbeck.alt.text.heuristics.toStringCoordinate
+import dev.hbeck.alt.text.common.toStringCoordinate
 import dev.hbeck.alt.text.proto.AltTextCoordinate
 import java.util.concurrent.TimeUnit
 

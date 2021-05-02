@@ -27,6 +27,7 @@ dependencies {
     implementation(project(":mutation-consumer"))
     implementation(project(":heuristics"))
     implementation(project(":twitter"))
+    implementation(project(":safety"))
 
     implementation("io.github.microutils:kotlin-logging:${Versions.kotlinLogging}")
     implementation("javax.validation:validation-api:${Versions.javaxValidation}")

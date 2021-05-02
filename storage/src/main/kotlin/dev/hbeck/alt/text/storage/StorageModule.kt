@@ -26,6 +26,7 @@ class StorageModule(private val config: FirestoreConfiguration) : AbstractModule
 
         bind(UsageMarker::class.java).to(AsyncUsageMarker::class.java)
         bind(MarkStorage::class.java).to(FirestoreMarkStorage::class.java)
-        bind(AltTextStorage::class.java).to(FirestoreAltTextStorage::class.java)
+        bind(AltTextRetriever::class.java).to(FirestoreAltTextStorage::class.java)
+        bind(AltTextMutator::class.java).to(FirestoreAltTextStorage::class.java)
     }
 }

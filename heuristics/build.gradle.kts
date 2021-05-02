@@ -27,12 +27,15 @@ dependencies {
 
     implementation("com.google.inject:guice:${Versions.guice}")
     implementation("io.github.microutils:kotlin-logging:${Versions.kotlinLogging}")
+    implementation("javax.validation:validation-api:${Versions.javaxValidation}")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jacksonModule}")
 
     implementation("io.netty:netty-tcnative-boringssl-static:${Versions.nettyTcnativeBoringSSL}")
     implementation("io.grpc:grpc-protobuf:${Versions.grpc}")
     implementation("io.grpc:grpc-stub:${Versions.grpc}")
     implementation("io.grpc:grpc-netty:${Versions.grpc}")
     implementation("org.slf4j:slf4j-api:${Versions.slf4j}")
+    implementation("com.google.cloud:google-cloud-secretmanager:${Versions.googleCloudSecretManager}")
 
     implementation("org.alt-text:alt-text-protos:${Versions.altTextProtos}")
     implementation("com.github.streem.pbandk:pbandk-runtime-jvm:${Versions.pbandk}")

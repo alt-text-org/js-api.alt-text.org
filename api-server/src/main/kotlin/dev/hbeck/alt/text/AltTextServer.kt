@@ -4,13 +4,15 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.google.inject.Stage
+import dev.hbeck.alt.text.heuristics.HeuristicsModule
 import dev.hbeck.alt.text.http.auth.AuthModule
 import dev.hbeck.alt.text.http.auth.BannedFilter
 import dev.hbeck.alt.text.http.auth.MultiAuthFilter
-import dev.hbeck.alt.text.http.resource.AdminAltTextResource
 import dev.hbeck.alt.text.http.resource.HealthcheckResource
 import dev.hbeck.alt.text.http.resource.PublicAltTextResource
 import dev.hbeck.alt.text.http.resource.TwitterResource
+import dev.hbeck.alt.text.mutation.ConsumerModule
+import dev.hbeck.alt.text.safety.SafetyModule
 import dev.hbeck.alt.text.storage.StorageModule
 import dev.hbeck.alt.text.twitter.TwitterModule
 import io.dropwizard.Application
@@ -36,8 +38,11 @@ class AltTextServer : Application<AltTextConfiguration>() {
             Stage.PRODUCTION,
             ConfigModule(conf),
             StorageModule(conf.firestoreConfig),
-            TwitterModule(),
-            AuthModule(conf.authConfiguration)
+            TwitterModule(conf.twitterConfig),
+            AuthModule(conf.authConfiguration),
+            HeuristicsModule(conf.heuristicsConfig),
+            ConsumerModule(conf.mutationHandlerConfig),
+            SafetyModule()
         )!!
 
         configureAuth(env, injector)
@@ -64,7 +69,6 @@ class AltTextServer : Application<AltTextConfiguration>() {
     private fun configureResources(env: Environment, injector: Injector) {
         env.jersey().register(injector.getInstance(TwitterResource::class.java))
         env.jersey().register(injector.getInstance(PublicAltTextResource::class.java))
-        env.jersey().register(injector.getInstance(AdminAltTextResource::class.java))
         env.jersey().register(injector.getInstance(HealthcheckResource::class.java))
     }
 

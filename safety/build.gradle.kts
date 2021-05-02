@@ -21,6 +21,8 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("io.github.microutils:kotlin-logging:${Versions.kotlinLogging}")
+    implementation("com.google.inject:guice:${Versions.guice}")
 
     implementation("org.alt-text:alt-text-protos:${Versions.altTextProtos}")
     implementation("com.github.streem.pbandk:pbandk-runtime-jvm:${Versions.pbandk}")
