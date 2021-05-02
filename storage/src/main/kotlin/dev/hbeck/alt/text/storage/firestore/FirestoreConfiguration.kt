@@ -6,7 +6,6 @@ import javax.validation.Valid
 
 class FirestoreConfiguration(
     @Valid @JsonProperty("projectId") val projectId: String,
-    @Valid @JsonProperty("databaseId") val databaseId: String,
     @Valid @JsonProperty("altTextCollection") val altTextCollection: String,
     @Valid @JsonProperty("readAwaitMillis") val readAwaitMillis: Long,
     @Valid @JsonProperty("writeAwaitMillis") val writeAwaitMillis: Long,

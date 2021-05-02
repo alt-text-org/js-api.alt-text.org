@@ -6,24 +6,6 @@ server:
     - type: http
       port: 7576
 
-firestore:
-  projectId: "alt-textorg"
-  databaseId: "alt-text-library"
-  altTextCollection: "texts"
-  faveCollection: "faves"
-  readAwaitMillis: 3000
-  writeAwaitMillis: 5000
-  readThreads: 100
-  readQueueLen: 10000
-  markFlushIntervalSeconds: 3
-  markShutdownAwaitSeconds: 10
-
-twitter:
-  accessTokenName: "access-token"
-  accessTokenSecretName: "access-token-secret"
-  apiKeyName: "api-key"
-  apiSecretKeyName: "api-key-secret"
-
 auth:
   acceptableTimeDeltaMillis: 5000
   resourceRetrieverTimeoutSeconds: 10
@@ -34,3 +16,33 @@ auth:
     algorithm: "RS256"
     audience: "https://api.alt-text.org"
     issuer: "https://accounts.google.com"
+
+firestore:
+  projectId: "alt-text-org"
+  altTextCollection: "texts"
+  faveCollection: "faves"
+  readAwaitMillis: 3000
+  writeAwaitMillis: 5000
+  readThreads: 100
+  readQueueLen: 10000
+  markFlushIntervalSeconds: 3
+  markShutdownAwaitSeconds: 10
+
+heuristics:
+  pineconeApiKeyName: "pinecone-api-key"
+  serverSideTimeoutSeconds: 5
+
+mutation:
+  queueLength: 10000
+  queueWorkers: 25
+  workerSleepMillis: 200
+  shutdownAwaitSeconds: 10
+  writeAttempts: 10
+  requeueWaitSeconds: 10
+  backoffMillis: 1000
+
+twitter:
+  accessTokenName: "twitter-access-token"
+  accessTokenSecretName: "twitter-access-token-secret"
+  apiKeyName: "twitter-api-key"
+  apiSecretKeyName: "twitter-api-key-secret"

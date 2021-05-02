@@ -8,15 +8,11 @@ import javax.validation.Valid
 
 class HeuristicsConfiguration(
     @Valid @JsonProperty("pineconeApiKeyName") val pineconeApiKeyName: String,
-    @Valid @JsonProperty("serverSideTimeoutSeconds") val serverSideTimeoutSeconds: Int,
-    @Valid @JsonProperty("serviceName") val serviceName: String,
-    @Valid @JsonProperty("serviceAuthority") val serviceAuthority: String
+    @Valid @JsonProperty("serverSideTimeoutSeconds") val serverSideTimeoutSeconds: Int
 ) {
     fun getPineconeClientConfiguration(): PineconeClientConfig = PineconeClientConfig()
         .withServerSideTimeoutSec(serverSideTimeoutSeconds)
 
     fun getPineconeConnectionConfig(): PineconeConnectionConfig = PineconeConnectionConfig()
-        .withServiceName(serviceName)
-        .withServiceAuthority(serviceAuthority)
         .withSecure(true)
 }
