@@ -20,47 +20,35 @@ All request and response objects are defined using Protocol Buffers. If you are 
 suggest using those definitions. They can be found [on GitHub](https://github.com/alt-text-org/alt-text-protos).
 
 
-Image Histograms
+Image Matching Heuristics
 ----------------
 
-The API uses image intensity histograms as one method of fuzzily-matching similar images. To calculate a histogram for
-submission:
+The API uses a number of heuristics for locating similar images. In all cases inclusion of each is optional. To fulfill
+a search request, the backend attempts them in order from strictest to loosest, first in exact search and then a vector
+distance search, corresponding to the order below:
 
-1. For each pixel in the array, calculate the intensity, scale the result by `0.13` (see example for calculation), then
-   increment the appropriate bucket.
-1. For each bucket, calculate the fraction of pixels in the image that are in that bucket as a 32bit float, they will
-   always be in the range `[0.0, 1.0]`
-1. Write the floats to a byte buffer in little-endian order
-1. URL-safe base64 encode the result.
+#### DCT Perceptual Hash
 
-The Javascript client uses the following code:
+A 64 bit little-endian hex encoded perceptual hash using a discrete cosine transform to extract intensity frequencies
+from a reduced version of the image.
+The [reference implementation](https://github.com/alt-text-org/api-client-js/blob/main/lib/heuristics.js#L164) is in the
+Javascript client.
 
-```js
-function getIntensityHist(image) {
-    const maxIntensity = 255 * 3
-    const buckets = 100
+#### Average Perceptual Hash
 
-    // Floor to two places, don't want to round so we don't accidentally round up.
-    const scale = Math.floor(buckets / maxIntensity * 100) / 100
+A 256 bit little-endian hex encoded perceptual hash encoding which side of the average image intensity each pixel of a
+reduced version of the image falls in. The
+[reference implementation](https://github.com/alt-text-org/api-client-js/blob/main/lib/heuristics.js#L155) is in the
+Javascript client.
 
-    let counts = new Array(100).fill(0)
-    let data = image.data
+#### Intensity Histogram
 
-    for (let i = 0; i < data.length; i += 4) {
-        let intensity = (data[i] + data[i + 1] + data[i + 2]) * (data[i + 3] / 255.0)
-        let bucket = Math.floor(intensity * scale)
-        counts[bucket]++
-    }
+An intensity-percentage histogram consisting of 100 32-bit floating point values indicating the fraction between 0.0 and
+1.0 of the pixels in the image whose intensity falls in the given bucket. The vector is transmitted as a 400 byte
+little-endian array, URL-safe base64 encoded.
+The [reference implementation](https://github.com/alt-text-org/api-client-js/blob/main/lib/heuristics.js#L128) is in the
+Javascript client.
 
-    const pixels = data.length / 4
-    let floats = new Float32Array(100)
-    for (let i = 0; i < 100; i++) {
-        floats[i] = Math.fround(counts[i] / pixels)
-    }
-
-    return encodeURLSafe(new Uint8Array(floats.buffer))
-}
-```
 
 Authentication
 --------------
@@ -99,7 +87,9 @@ __Optional query parameters__:
 
 __Optional Headers__:
 
-- `X-Alt-Text-Org-Intensity-Hist: <URL-safe base64 encoded histogram as descibed above>`
+- `X-Alt-Text-Org-Intensity-Hist: <URL-safe base64 encoded histogram as described above>`
+- `X-Alt-Text-Org-DCT-Hash: <Hex encoded DCT perceptual hash as described above>`
+- `X-Alt-Text-Org-Average-Hash: <Hex encoded average perceptual hash as described above>`
 
 __Rate Limit__
 
@@ -213,6 +203,8 @@ __Required Headers__
 __Optional Headers__:
 
 - `X-Alt-Text-Org-Intensity-Hist: <URL-safe base64 encoded histogram as descibed above>`
+- `X-Alt-Text-Org-DCT-Hash: <Hex encoded DCT perceptual hash as described above>`
+- `X-Alt-Text-Org-Average-Hash: <Hex encoded average perceptual hash as described above>`
 
 __Rate Limit__
 
