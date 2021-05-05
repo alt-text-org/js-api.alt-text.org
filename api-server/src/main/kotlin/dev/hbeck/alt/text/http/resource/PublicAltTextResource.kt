@@ -43,9 +43,14 @@ class PublicAltTextResource @Inject constructor(
 
     companion object {
         private const val intensityHistHeader = "X-Alt-Text-Org-Intensity-Hist"
+        private const val intensityHistByteLength = 400
+        private const val averageHashHeader = "X-Alt-Text-Org-Average-Hash"
+        private const val averageHashHexLength = 64
+        private const val dctHashHeader = "X-Alt-Text-Org-DCT-Hash"
+        private const val dctHashHexLength = 32
         private const val timestampHeader = "X-Alt-Text-Org-Timestamp"
         private const val maxMatches = "20"
-        private const val intensityHistByteLength = 400
+        private const val imageAndUserHashLength = 64
 
         private val maxMatchesInt = maxMatches.toInt()
     }
@@ -62,7 +67,10 @@ class PublicAltTextResource @Inject constructor(
         @PathParam("language") language: String,
         @DefaultValue(maxMatches) @QueryParam("matches") matches: Int,
         @DefaultValue("") @QueryParam("ocr_url") ocrUrl: String,
-        @DefaultValue("") @HeaderParam(intensityHistHeader) intensityHist: String
+        @DefaultValue("") @HeaderParam(intensityHistHeader) intensityHist: String,
+        @DefaultValue("") @HeaderParam(averageHashHeader) averageHash: String,
+        @DefaultValue("") @HeaderParam(dctHashHeader) dctHash: String
+
     ): GetAltTextsForImageResponse {
         if (matches > maxMatchesInt) {
             throw BadRequestException("""{"reason": "Only $maxMatches may be requested"}""")
@@ -78,14 +86,10 @@ class PublicAltTextResource @Inject constructor(
             }
         }
 
-        val heuristics = if (intensityHist.isNotEmpty()) {
-            Heuristics(intensityHist = intensityHist)
-        } else {
-            null
-        }
+        val heuristics = getHeuristics(intensityHist, averageHash, dctHash)
 
         val texts = matchManager.getMatchingTexts(
-            imageHash = checkHash("image_hash", imageHash),
+            imageHash = checkHash("image_hash", imageHash, imageAndUserHashLength),
             heuristics = heuristics,
             language = checkLanguage(language),
             matches = matches,
@@ -117,6 +121,8 @@ class PublicAltTextResource @Inject constructor(
         @PathParam("language") language: String,
         @DefaultValue("") @HeaderParam(timestampHeader) timestampStr: String,
         @DefaultValue("") @HeaderParam(intensityHistHeader) intensityHist: String,
+        @DefaultValue("") @HeaderParam(averageHashHeader) averageHash: String,
+        @DefaultValue("") @HeaderParam(dctHashHeader) dctHash: String,
         @Auth user: UserPrincipal,
         altText: NewAltText
     ): Response {
@@ -135,22 +141,12 @@ class PublicAltTextResource @Inject constructor(
         }
 
 
-        val heuristics = if (intensityHist.isNotEmpty()) {
-            try {
-                Base64.getDecoder().decode(intensityHist)
-            } catch (e: Exception) {
-                null
-            }?.takeIf { it.size == intensityHistByteLength }
-                ?: throw BadRequestException("""{"reason": "Malformed intensity histogram, expected $intensityHistByteLength base64 bytes"}""")
+        val heuristics = getHeuristics(intensityHist, averageHash, dctHash)
 
-            Heuristics(intensityHist = intensityHist)
-        } else {
-            Heuristics()
-        }
 
         val event = UserActionEvent(
             coordinate = AltTextCoordinate(
-                imageHash = checkHash("image_hash", imageHash),
+                imageHash = checkHash("image_hash", imageHash, imageAndUserHashLength),
                 userHash = hasher.hash(user.name),
                 language = checkLanguage(language)
             ),
@@ -185,7 +181,7 @@ class PublicAltTextResource @Inject constructor(
     ): Response {
         val event = UserActionEvent(
             coordinate = AltTextCoordinate(
-                imageHash = checkHash("image_hash", imageHash),
+                imageHash = checkHash("image_hash", imageHash, imageAndUserHashLength),
                 userHash = hasher.hash(user.name),
                 language = checkLanguage(language)
             ),
@@ -244,8 +240,8 @@ class PublicAltTextResource @Inject constructor(
 
         val event = UserActionEvent(
             coordinate = AltTextCoordinate(
-                imageHash = checkHash("image_hash", imageHash),
-                userHash = checkHash("user_hash", userHash),
+                imageHash = checkHash("image_hash", imageHash, imageAndUserHashLength),
+                userHash = checkHash("user_hash", userHash, imageAndUserHashLength),
                 language = checkLanguage(language)
             ),
             userInfo = user.toSubmittingUser(),
@@ -273,8 +269,8 @@ class PublicAltTextResource @Inject constructor(
         @PathParam("language") language: String,
     ): Response {
         val coordinate = AltTextCoordinate(
-            imageHash = checkHash("image_hash", imageHash),
-            userHash = checkHash("user_hash", userHash),
+            imageHash = checkHash("image_hash", imageHash, imageAndUserHashLength),
+            userHash = checkHash("user_hash", userHash, imageAndUserHashLength),
             language = checkLanguage(language)
         )
 
@@ -283,13 +279,59 @@ class PublicAltTextResource @Inject constructor(
         return Response.accepted().build()
     }
 
-    private val hashRegex = "^[0-9a-fA-F]{64}$".toRegex()
-    private fun checkHash(fieldName: String, maybeHash: String): String {
+    private fun getHeuristics(intensityHist: String, averageHash: String, dctHash: String): Heuristics? {
+        if (intensityHist.isEmpty() && averageHash.isEmpty() && dctHash.isEmpty()) {
+            return null
+        }
+
+        var heuristics = Heuristics.defaultInstance
+
+        if (intensityHist.isNotEmpty()) {
+            heuristics = heuristics.copy(
+                intensityHist = checkBase64(intensityHistHeader, intensityHist, intensityHistByteLength)
+            )
+        }
+
+        if (averageHash.isNotEmpty()) {
+            heuristics = heuristics.copy(
+                averagePerceptualHash = checkHash(averageHashHeader, averageHash, averageHashHexLength)
+            )
+        }
+
+        if (dctHash.isNotEmpty()) {
+            heuristics = heuristics.copy(
+                dctPerceptualHash = checkHash(dctHashHeader, dctHash, dctHashHexLength)
+            )
+        }
+
+        return heuristics
+    }
+
+    private val hashRegex = "^[0-9a-fA-F]+$".toRegex()
+    private fun checkHash(fieldName: String, maybeHash: String, expectedLength: Int): String {
         if (!hashRegex.matches(maybeHash)) {
-            throw BadRequestException("""{"reason": "Malformed hash '$maybeHash' for field $fieldName"}""")
+            throw BadRequestException("""{"reason": "Hash '$maybeHash' for field $fieldName contains non-hex characters"}""")
+        }
+
+        if (maybeHash.length != expectedLength) {
+            throw BadRequestException("""{"reason": "Wrong length hex encoded hash '$maybeHash' for field $fieldName. Expected $expectedLength but got ${maybeHash.length}"}""")
         }
 
         return maybeHash
+    }
+
+    private fun checkBase64(fieldName: String, maybeBase64: String, expectedLengthAfterDecode: Int): String {
+        val length = try {
+            Base64.getUrlDecoder().decode(maybeBase64).size
+        } catch (e: IllegalArgumentException) {
+            throw BadRequestException("""{"reason": "Malformed url-safe base64 encoded field $fieldName: '$maybeBase64'"}""")
+        }
+
+        if (length != expectedLengthAfterDecode) {
+            throw BadRequestException("""{"reason": "Malformed url-safe base64 encoded field $fieldName: Expected $expectedLengthAfterDecode bytes but got $length. '$maybeBase64'"}""")
+        }
+
+        return maybeBase64
     }
 
     private fun parseTimestamp(ts: String): Long {

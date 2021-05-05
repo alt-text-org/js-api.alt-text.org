@@ -1,7 +1,7 @@
 package dev.hbeck.alt.text.shared
 
 object Versions {
-    const val altTextProtos = "0.6.5"
+    const val altTextProtos = "0.6.6"
     const val dropwizard = "2.0.20"
     const val firebaseAdmin = "7.1.1"
     const val googleCloudSecretManager = "1.4.2"
