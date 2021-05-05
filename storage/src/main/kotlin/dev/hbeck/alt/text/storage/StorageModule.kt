@@ -15,15 +15,6 @@ import dev.hbeck.alt.text.storage.firestore.UsageMarker
 
 class StorageModule(private val config: FirestoreConfiguration) : AbstractModule() {
     override fun configure() {
-        val credentials = GoogleCredentials.getApplicationDefault()
-        val options = FirebaseOptions.builder()
-            .setCredentials(credentials)
-            .setProjectId(config.projectId)
-            .build()
-        FirebaseApp.initializeApp(options)
-
-        bind(Firestore::class.java).toInstance(FirestoreClient.getFirestore())
-
         bind(UsageMarker::class.java).to(AsyncUsageMarker::class.java)
         bind(MarkStorage::class.java).to(FirestoreMarkStorage::class.java)
         bind(AltTextRetriever::class.java).to(FirestoreAltTextStorage::class.java)
