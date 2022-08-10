@@ -1,4 +1,4 @@
-const { createCanvas, loadImage, Image } = require("canvas");
+const {createCanvas} = require("canvas");
 
 /**
  * This is copied from https://github.com/Sherryer/dct2, which is distributed under an MIT license
@@ -29,7 +29,7 @@ const getCoff = (index, length) => {
     if (!Hash[length]) {
         let coff = [];
         coff[0] = 1 / Math.sqrt(length);
-        for (let i = 1; i < length; i++){
+        for (let i = 1; i < length; i++) {
             coff[i] = Math.sqrt(2) / Math.sqrt(length);
         }
         Hash[length] = coff;
@@ -41,42 +41,21 @@ const DCT = (signal) => {
     const length = signal.length;
     let tmp = Array(length * length).fill(0);
     let res = Array(length).fill('').map(() => []);
-    for (let i = 0; i < length; i++){
-        for (let j = 0; j < length; j++){
-            for (let x = 0; x < length; x++){
+    for (let i = 0; i < length; i++) {
+        for (let j = 0; j < length; j++) {
+            for (let x = 0; x < length; x++) {
                 tmp[i * length + j] += getCoff(j, length) * signal[i][x] * cosine(x, j, length);
             }
         }
     }
-    for (let i = 0; i < length; i++){
-        for (let j = 0; j < length; j++){
-            for (let x = 0; x < length; x++){
+    for (let i = 0; i < length; i++) {
+        for (let j = 0; j < length; j++) {
+            for (let x = 0; x < length; x++) {
                 res[i][j] = (res[i][j] || 0) + getCoff(i, length) * tmp[x * length + j] * cosine(x, i, length)
             }
         }
     }
     return res
-};
-
-const IDCT = (signal) => {
-    const length = signal.length;
-    let tmp = Array(length * length).fill(0);
-    let res = Array(length).fill('').map(() => []);
-    for (let i = 0; i < length; i++){
-        for (let j = 0; j < length; j++){
-            for (let x = 0; x < length; x++){
-                tmp[i*length + j] += getCoff(x, length) * signal[i][x] * cosine(j, x, length);
-            }
-        }
-    }
-    for (let i = 0; i < length; i++){
-        for (let j = 0; j < length; j++){
-            for (let x = 0; x < length; x++){
-                res[i][j] = (res[i][j] || 0) + getCoff(x, length) * tmp[x*length + j] * cosine(i, x, length)
-            }
-        }
-    }
-    return res;
 };
 
 // End copied code

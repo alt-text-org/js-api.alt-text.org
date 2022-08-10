@@ -2,10 +2,10 @@ const crypto = require("crypto");
 const fetch = require("node-fetch");
 const {createCanvas, loadImage, Image} = require('canvas')
 
-const { toGreyscale, shrinkImage, dct1024Image } = require("./dct")
+const {toGreyscale, shrinkImage, dct1024Image} = require("./dct")
 
 function ts() {
-  return new Date().toISOString();
+    return new Date().toISOString();
 }
 
 async function loadImageFromUrl(url) {
@@ -89,20 +89,20 @@ async function searchablesForUrl(url) {
 }
 
 async function searchablesForBase64(base64) {
-  const { image, imageData } = await imageBase64ToImageData(base64).catch(err => {
-    console.log(`${ts()}: Error getting image from base64:`)
-    console.log(err)
-    return {
-      image: null,
-      imageData: null
+    const {image, imageData} = await imageBase64ToImageData(base64).catch(err => {
+        console.log(`${ts()}: Error getting image from base64:`)
+        console.log(err)
+        return {
+            image: null,
+            imageData: null
+        }
+    })
+
+    if (image && imageData) {
+        return searchablesForImageData(image, imageData)
+    } else {
+        return null;
     }
-  })
-  
-  if (image && imageData) {
-    return searchablesForImageData(image, imageData)  
-  } else {
-    return null;  
-  }
 }
 
 exports.searchablesForUrl = searchablesForUrl;
