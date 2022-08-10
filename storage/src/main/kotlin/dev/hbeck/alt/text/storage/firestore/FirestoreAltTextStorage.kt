@@ -69,7 +69,7 @@ class FirestoreAltTextStorage @Inject constructor(
         }
     }
 
-    override fun search(imageHash: String, language: String, matches: Int): List<InternalAltText> {
+    override fun searchExact(imageHash: String, language: String, matches: Int): List<InternalAltText> {
         val collection = firestore.collection(configuration.altTextCollection)
         val query = collection.whereEqualTo(imgHashField, imageHash).whereEqualTo(langField, language)
 

@@ -59,6 +59,8 @@ class PineconeHeuristicMatcher @Inject constructor(
     private fun getNamespace(heuristicType: HeuristicType, language: String): String {
         val heuristicPrefix = when (heuristicType) {
             HeuristicType.INTENSITY_HISTOGRAM -> "IH"
+            HeuristicType.AVERAGE_PERCEPTUAL_HASH -> "APH"
+            HeuristicType.DCT_PERCEPTUAL_HASH -> "DCTPH"
         }
 
         return "${heuristicPrefix}_$language"
