@@ -25,7 +25,7 @@ fastify.register(require("@fastify/rate-limit"), {
 const config = {
     googleCreds: process.env.GOOGLE_APPLICATION_CREDENTIALS,
     pineconeApiKey: process.env.PINECONE_API_KEY,
-    editorTokens: process.env.EDITOR_TOKENS.split(","),
+    writerToken: `Bearer ${process.env.WRITER_TOKEN}`,
     firestore: {
         project: process.env.GOOGLE_PROJECT,
     },
@@ -76,12 +76,16 @@ async function getOCR(base64, url) {
 const fetchOpts = {
     schema: {
         body: {
-            type: "object", required: ["image"], properties: {
+            type: "object", required: ["image"],
+            properties: {
                 image: {
-                    type: "object", properties: {
-                        url: {type: "string"}, base64: {type: "string"},
+                    type: "object",
+                    properties: {
+                        url: {type: "string"},
+                        base64: {type: "string"},
                     },
-                }, language: {type: "string"},
+                },
+                language: {type: "string"},
             },
         }, response: {
             200: {
@@ -106,9 +110,7 @@ const fetchOpts = {
             .then((searchables) => {
                 if (!searchables) {
                     console.log(`${ts()}: Failed to get searchables for ${image.url || "<base64>"}`);
-                    reply
-                        .status(400)
-                        .send({error: "Couldn't get searchables for requested image"});
+                    reply.status(400).send({error: "Couldn't get searchables for requested image"});
                     return null;
                 }
 
@@ -144,15 +146,17 @@ const fetchOpts = {
             });
     },
 };
-fastify.post("/v1/alt-library/fetch", fetchOpts);
+fastify.post("/library/v1/fetch", fetchOpts);
 
 const saveOpts = {
     schema: {
         body: {
-            type: "object", required: ["image", "language", "alt_text", "id_scope", "author_id"], properties: {
+            type: "object", required: ["image", "language", "alt_text", "id_scope", "author_id"],
+            properties: {
                 image: {
                     type: "object", properties: {
-                        url: {type: "string"}, base64: {type: "string"},
+                        url: {type: "string"},
+                        base64: {type: "string"},
                     },
                 },
                 language: {type: "string"},
@@ -162,12 +166,15 @@ const saveOpts = {
             },
         },
     }, handler: (request, reply) => {
+        if (request.headers.Authorization !== config.writerToken) {
+            reply.status(401).send()
+            return
+        }
+
         const {image, language, alt_text, id_scope, author_id} = request.body;
 
         if (!alt_text) {
-            reply
-                .status(400)
-                .send({error: "alt_text must be provided and non-empty"});
+            reply.status(400).send({error: "alt_text must be provided and non-empty"});
         }
 
         if (!image.base64 !== !image.url) {
@@ -199,7 +206,7 @@ const saveOpts = {
         });
     },
 };
-fastify.post("/v1/alt-library/save", saveOpts);
+fastify.post("/library/v1/save", saveOpts);
 
 const reportOpts = {
     schema: {
@@ -224,9 +231,7 @@ const reportOpts = {
         }
 
         if (reason.length > 1000) {
-            reply
-                .status(400)
-                .send({error: "Reason must be at most 1000 characters"});
+            reply.status(400).send({error: "Reason must be at most 1000 characters"});
             return;
         }
 
@@ -243,7 +248,7 @@ const reportOpts = {
         }
     },
 };
-fastify.post("/v1/alt-library/report", reportOpts);
+fastify.post("/library/v1/report", reportOpts);
 
 const ocrOpts = {
     schema: {
@@ -279,7 +284,7 @@ const ocrOpts = {
             });
     },
 };
-fastify.post("/v1/ocr", ocrOpts);
+fastify.post("/ocr/v1", ocrOpts);
 
 const signupOpts = {
     handler: (request, reply) => {
@@ -297,7 +302,7 @@ const signupOpts = {
         reply.status(200).send(JSON.stringify(body));
     },
 };
-fastify.get("/v1/alt-library/sign-up", signupOpts);
+fastify.get("/library/v1/twitter-sign-up", signupOpts);
 
 const MAX_STATE_LIFETIME_MILLIS = 5 * 60 * 1000;
 const signupCallbackOpts = {
@@ -343,7 +348,7 @@ const signupCallbackOpts = {
         }
     },
 };
-fastify.get("/v1/alt-library/sign-up-callback", signupCallbackOpts);
+fastify.get("/library/v1/twitter-sign-up-callback", signupCallbackOpts);
 
 function cleanTwitterStates() {
     for (let state in twitterStates) {
