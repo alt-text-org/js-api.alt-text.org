@@ -177,7 +177,7 @@ const saveOpts = {
             reply.status(400).send({error: "alt_text must be provided and non-empty"});
         }
 
-        if (!image.base64 !== !image.url) {
+        if (!image.base64 === !image.url) {
             reply.status(400).send({
                 error: "Must include exactly one of image.url and image.base64",
             });
