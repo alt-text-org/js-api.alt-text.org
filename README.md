@@ -1,6 +1,8 @@
 Alt-Text.org API
 ================
 
+Status: Open beta
+
 This is the primary API for the Alt-Text.org backend. It exposes 
 a fairly small set of public endpoints. All endpoints consume and 
 return JSON objects if they consume or return anything. Any non-2xx
