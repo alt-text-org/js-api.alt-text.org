@@ -17,7 +17,9 @@
     "node-fetch": "^2.6.6",
     "canvas": "^2.9.3",
     "uuid": "^8.3.2",
-    "twitter-api-sdk": "^1.1.0"
+    "twitter-api-sdk": "^1.1.0",
+    "underscore": "^1.13.4",
+    "numjs": "^0.16.1"
   },
   "engines": {
     "node": "16.14.2"
