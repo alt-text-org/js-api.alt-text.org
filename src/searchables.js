@@ -55,18 +55,16 @@ async function imageBase64ToImageData(imageBase64) {
     };
 }
 
-function sha256Image(image, imageData) {
-    let resized = shrinkImage(image, imageData, 100)
-    let greyscale = toGreyscale(resized)
+function sha256Image(imageData) {
     return crypto
         .createHash("sha256")
-        .update(Buffer.from(greyscale))
+        .update(Buffer.from(imageData.data.buffer))
         .digest("hex");
 }
 
 async function searchablesForImageData(image, imageData) {
     return {
-        sha256: sha256Image(image, imageData),
+        sha256: sha256Image(imageData),
         dct1024: await dct1024Image(image, imageData)
     }
 }
