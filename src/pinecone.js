@@ -2,8 +2,8 @@ const fetch = require("node-fetch");
 
 function makeClient(apiKey) {
     return {
-        upsertDCT1024: upserter(apiKey, "https://dct1024-b335ecb.svc.us-west1-gcp.pinecone.io/vectors/upsert", "alt"),
-        queryDCT1024: queryer(apiKey, "https://dct1024-b335ecb.svc.us-west1-gcp.pinecone.io/query", "alt")
+        upsert: upserter(apiKey, "https://goldberg-544-cosine-b335ecb.svc.us-west1-gcp.pinecone.io/vectors/upsert", "alt"),
+        query: queryer(apiKey, "https://goldberg-544-cosine-b335ecb.svc.us-west1-gcp.pinecone.io/query", "alt")
     };
 }
 

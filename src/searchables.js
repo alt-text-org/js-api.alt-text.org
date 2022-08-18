@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const fetch = require("node-fetch");
 const {createCanvas, loadImage, Image} = require('canvas')
 
-const {toGreyscale, shrinkImage, dct1024Image} = require("./dct")
+const {goldberg} = require("./goldberg/image_signature");
 
 function ts() {
     return new Date().toISOString();
@@ -49,10 +49,7 @@ async function imageBase64ToImageData(imageBase64) {
     ctx.clearRect(0, 0, image.width, image.height)
     ctx.drawImage(image, 0, 0)
 
-    return {
-        image: image,
-        imageData: ctx.getImageData(0, 0, image.width, image.height)
-    };
+    return ctx.getImageData(0, 0, image.width, image.height)
 }
 
 function sha256Image(imageData) {
@@ -62,10 +59,10 @@ function sha256Image(imageData) {
         .digest("hex");
 }
 
-async function searchablesForImageData(image, imageData) {
+function searchablesForImageData(imageData) {
     return {
         sha256: sha256Image(imageData),
-        dct1024: await dct1024Image(image, imageData)
+        goldberg544: goldberg(imageData)
     }
 }
 
@@ -83,21 +80,18 @@ async function searchablesForUrl(url) {
     const imageData = context
         .getImageData(0, 0, canvas.width, canvas.height);
 
-    return searchablesForImageData(image, imageData)
+    return searchablesForImageData(imageData)
 }
 
 async function searchablesForBase64(base64) {
-    const {image, imageData} = await imageBase64ToImageData(base64).catch(err => {
+    const imageData = await imageBase64ToImageData(base64).catch(err => {
         console.log(`${ts()}: Error getting image from base64:`)
         console.log(err)
-        return {
-            image: null,
-            imageData: null
-        }
+        return null
     })
 
-    if (image && imageData) {
-        return searchablesForImageData(image, imageData)
+    if (imageData) {
+        return searchablesForImageData(imageData)
     } else {
         return null;
     }

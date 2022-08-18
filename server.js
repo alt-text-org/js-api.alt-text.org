@@ -114,7 +114,7 @@ const fetchOpts = {
                     return null;
                 }
 
-                return storage.getAlt(searchables.sha256, searchables.dct1024, language);
+                return storage.getAlt(searchables.sha256, searchables.goldberg544, language);
             })
             .then(async (alt) => {
                 if (!alt) {
@@ -191,7 +191,7 @@ const saveOpts = {
                 return;
             }
 
-            const success = await storage.saveAlt(searchables.sha256, searchables.dct1024, image.url, language, alt_text, id_scope, author_id);
+            const success = await storage.saveAlt(searchables.sha256, searchables.goldberg544, image.url, language, alt_text, id_scope, author_id);
             if (success) {
                 console.log(`${ts()}: Successfully saved alt text for ${image.url || "<base64>"}`);
                 reply.status(204).send();

@@ -9,24 +9,24 @@ function makeStorage(pineconeClient, firestoreClient) {
 }
 
 function makeSaveAlt(pinecone, firestore) {
-    return async (sha256, dct1024, image_url, language, alt_text, scope, author_id) => {
+    return async (sha256, goldberg544, image_url, language, alt_text, scope, author_id) => {
         const uuid = await firestore.getOrCreateAuthorUuid(scope, author_id);
         await firestore.saveAlt(sha256, image_url, language, alt_text, uuid);
-        return await pinecone.upsertDCT1024(sha256, dct1024);
+        return await pinecone.upsert(sha256, goldberg544);
     };
 }
 
 function makeGetAlt(pinecone, firestore) {
-    return async (sha256, dct1024, language) => {
+    return async (sha256, goldberg544, language) => {
         const exact = await firestore.getAlt(sha256);
-        if (!dct1024 || exact.length >= MIN_RESULTS) {
+        if (!goldberg544 || exact.length >= MIN_RESULTS) {
             return {
                 exact: exact,
                 fuzzy: []
             }
         }
 
-        const fuzzyDCTShas = await pinecone.queryDCT1024(dct1024, MIN_RESULTS - exact.length);
+        const fuzzyDCTShas = await pinecone.query(goldberg544, MIN_RESULTS - exact.length);
         const fuzzy = []
 
         for (let fuzzySha of fuzzyDCTShas) {

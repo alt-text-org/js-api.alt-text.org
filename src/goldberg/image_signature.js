@@ -5,7 +5,7 @@ const nj = require('numjs')
 const njUtil = require('./nj_util')
 const arrayUtil = require('./array_util')
 
-function goldberg(image, imageData) {
+function goldberg(imageData) {
     const gray = nj.array(grayscale(imageData))
     const reshaped = gray.reshape(imageData.height, imageData.width)
 

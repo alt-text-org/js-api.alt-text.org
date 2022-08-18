@@ -1,7 +1,7 @@
 const {createCanvas, loadImage} = require("canvas");
 const fetch = require("node-fetch");
 
-const {dct1024Image} = require("./dct")
+const {goldberg} = require("./goldberg/image_signature");
 
 function ts() {
     return new Date().toISOString();
@@ -32,7 +32,7 @@ async function loadImageFromUrl(url) {
         });
 }
 
-async function portToDct1024(firestore, pinecone) {
+async function portToGoldberg(firestore, pinecone) {
     let records = await firestore.getAll("alt-text");
     records.forEach((record) => {
         loadImageFromUrl(record.image_url).then(async (img) => {
@@ -42,8 +42,8 @@ async function portToDct1024(firestore, pinecone) {
                 context.drawImage(img, 0, 0);
 
                 const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
-                const vec = await dct1024Image(img, imgData)
-                const sent = await pinecone.upsertDCT1024(record.sha256, vec)
+                const vec = await goldberg(img, imgData)
+                const sent = await pinecone.upsert(record.sha256, vec)
                 console.log(`URL: ${record.image_url} Sent: ${sent}`)
             } else {
                 console.log(`Couldn't fetch ${record.image_url}`);
@@ -53,4 +53,4 @@ async function portToDct1024(firestore, pinecone) {
     });
 }
 
-exports.portToDct1024 = portToDct1024
+exports.portToGoldberg = portToGoldberg
