@@ -7,7 +7,7 @@ const arrayUtil = require('./array_util')
 
 // https://github.com/numpy/numpy/blob/v1.10.1/numpy/lib/function_base.py#L1116-L1175
 function diff(a, n, axis) {
-    // default to
+    // default to 1
     n = n === undefined ? 1 : n
     if (n === 0) {
         return a
@@ -17,8 +17,8 @@ function diff(a, n, axis) {
     }
 
     let nd = a.shape.length
-    let slice1 = _.map(_.range(nd), el => [null])
-    let slice2 = _.map(_.range(nd), el => [null])
+    let slice1 = _.map(_.range(nd), () => [null])
+    let slice2 = _.map(_.range(nd), () => [null])
     // default to last axis
     axis = axis === undefined ? nd - 1 : axis
     slice1[axis] = 1
@@ -44,10 +44,10 @@ function sum(a, axis) {
         // get cumulative sum of array (splice to discard initial 0)
         return nj.array(arrayUtil.scanLeft(0, a.tolist(), (prev, curr) => prev + curr).slice(1))
     } else {
-        let slice = _.map(_.range(nd), el => [null, null, null])
+        let slice = _.map(_.range(nd), () => [null, null, null])
 
         let sumSlice = nj.zeros(sliceShape)
-        // LOOP INVARIANT: sumSlice is the cum sum up to i on the axis
+        // LOOP INVARIANT: sumSlice is the cumulative sum up to i on the axis
         for (let i = 0; i < axisLength; i++) {
             // slice array at i on the given axis
             slice[axis] = [i, i + 1]
@@ -60,9 +60,9 @@ function sum(a, axis) {
 
 
 // TODO test for array rank > 2
-function cumsum(a, axis) {
+function cumulativeSum(a, axis) {
     if (axis === undefined) {
-        return cumsum(a.flatten(), 0)
+        return cumulativeSum(a.flatten(), 0)
     }
 
     const nd = a.shape.length
@@ -71,14 +71,19 @@ function cumsum(a, axis) {
     sliceShape.splice(axis, 1)
 
     if (sliceShape.length === 0) {
+        console.log("Zero")
+
+
         // get cumulative sum of array (splice to discard initial 0)
-        return nj.array(arrayUtil.scanLeft(0, a.tolist(), (prev, curr) => prev + curr).slice(1))
+        const orig = arrayUtil.scanLeft(0, a.tolist(), (prev, curr) => prev + curr).slice(1)
+        return nj.array(orig)
     } else {
-        let slice = _.map(_.range(nd), el => [null, null, null])
+        console.log("Nah")
+        let slice = _.map(_.range(nd), () => [null, null, null])
 
         const result = []
         let sumSlice = nj.zeros(sliceShape)
-        // LOOP INVARIANT: result is the cum sum up to i on the axis
+        // LOOP INVARIANT: result is the cumulative sum up to i on the axis
         for (let i = 0; i < axisLength; i++) {
             // slice array at i on the given axis
             slice[axis] = [i, i + 1]
@@ -95,7 +100,7 @@ function cumsum(a, axis) {
 }
 
 // http://stackoverflow.com/questions/22697936/binary-search-in-javascript
-function searchsorted(a, v) {
+function searchSorted(a, v) {
     let m = 0;
     let n = a.shape[0] - 1
     while (m <= n) {
@@ -180,8 +185,7 @@ function percentile(a, q) {
         } else if (upper === undefined) {
             return lower
         } else {
-            const interpolated = FR * (upper - lower) + lower
-            return interpolated
+            return FR * (upper - lower) + lower
         }
     }
 }
@@ -189,17 +193,6 @@ function percentile(a, q) {
 const l2Norm = arr => Math.sqrt(vectorize(arr, x => Math.pow(x, 2)).sum())
 
 const distance = (a1, a2) => l2Norm(a1.subtract(a2)) / (l2Norm(a1) + l2Norm(a2))
-
-exports.diff = diff
-exports.sum = sum
-exports.cumsum = cumsum
-exports.searchsorted = searchsorted
-exports.vectorize = vectorize
-exports.getNeighbors = getNeighbors
-exports.sort = sort
-exports.percentile = percentile
-exports.l2Norm = l2Norm
-exports.distance = distance
 
 function clip(start, end, value) {
     if (value < start) {
@@ -210,4 +203,15 @@ function clip(start, end, value) {
         return value
     }
 }
+
+exports.diff = diff
+exports.sum = sum
+exports.cumulativeSum = cumulativeSum
+exports.searchSorted = searchSorted
+exports.vectorize = vectorize
+exports.getNeighbors = getNeighbors
+exports.sort = sort
+exports.percentile = percentile
+exports.l2Norm = l2Norm
+exports.distance = distance
 

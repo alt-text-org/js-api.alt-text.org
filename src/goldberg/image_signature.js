@@ -5,18 +5,8 @@ const nj = require('numjs')
 const njUtil = require('./nj_util')
 const arrayUtil = require('./array_util')
 
-function generate(imageData) {
-    const img = nj.array(imageData.data)
-    const rgb = img.reshape(imageData.height, imageData.width, 4)
-
-    let flattened;
-    if (rgb.selection.data.length === imageData.height * imageData.width * 4) {
-        flattened = rgb.selection.data
-    } else {
-        flattened = rgb.selection.data[0]
-    }
-
-    const gray = nj.array(grayscale(flattened))
+function goldberg(image, imageData) {
+    const gray = nj.array(grayscale(imageData))
     const reshaped = gray.reshape(imageData.height, imageData.width)
 
     const cropped = autoCrop(reshaped, 10, 90)
@@ -42,30 +32,34 @@ function generate(imageData) {
     // function to turn gray values to
     const normalizeWithCutoffs = _.partial(normalize, 2, positiveCutoff, negativeCutoff)
 
-    return _.map(differentialGroups, differentials => _.map(differentials, normalizeWithCutoffs))
+    return _.map(differentialGroups, differentials => _.map(differentials, normalizeWithCutoffs)).flat()
 }
 
-// rgbaData is a a Uint8ClampedArray from ImageData.data
-function grayscale(rgbData) {
-    let rgbArrays = arrayUtil.sliding(rgbData, 3, 4)
-    let grays = rgbArrays.map(average)
-    return grays.map(Math.round)
+function grayscale(imageData) {
+    const rgba = new Uint8Array(imageData.data.buffer)
+    let greyscale = new Uint8Array(rgba.length / 4);
+    for (let i = 0, j = 0; i < rgba.length; i += 4, j++) {
+        let intensity = (rgba[i] + rgba[i + 1] + rgba[i + 2]) * (rgba[i + 3] / 255.0);
+        greyscale[j] = Math.round(intensity / 3.0);
+    }
+
+    return Array.from(greyscale);
 }
 
 function autoCrop(gray, lowerPercentile, upperPercentile) {
     // row-wise differences
-    const rw = njUtil.cumsum(njUtil.sum(nj.abs(njUtil.diff(gray, undefined, 1)), 1))
+    const rw = njUtil.cumulativeSum(njUtil.sum(nj.abs(njUtil.diff(gray, undefined, 1)), 1))
     // column-wise differences
-    const cw = njUtil.cumsum(njUtil.sum(nj.abs(njUtil.diff(gray, undefined, 0)), 0))
+    const cw = njUtil.cumulativeSum(njUtil.sum(nj.abs(njUtil.diff(gray, undefined, 0)), 0))
 
     const rowTotal = rw.get(-1)
     const colTotal = cw.get(-1)
 
-    const upperRowLimit = njUtil.searchsorted(rw, rowTotal * upperPercentile / 100)
-    const lowerRowLimit = njUtil.searchsorted(rw, rowTotal * lowerPercentile / 100)
+    const upperRowLimit = njUtil.searchSorted(rw, rowTotal * upperPercentile / 100)
+    const lowerRowLimit = njUtil.searchSorted(rw, rowTotal * lowerPercentile / 100)
 
-    const upperColLimit = njUtil.searchsorted(cw, colTotal * upperPercentile / 100)
-    const lowerColLimit = njUtil.searchsorted(cw, colTotal * lowerPercentile / 100)
+    const upperColLimit = njUtil.searchSorted(cw, colTotal * upperPercentile / 100)
+    const lowerColLimit = njUtil.searchSorted(cw, colTotal * lowerPercentile / 100)
 
     return gray.slice([lowerRowLimit, upperRowLimit + 1], [lowerColLimit, upperColLimit + 1])
 }
@@ -121,23 +115,6 @@ function normalize(equalCutoff, positiveCutoff, negativeCutoff, value) {
     }
 }
 
-const distance = (sig1, sig2) => njUtil.distance(nj.array(arrayUtil.flatten(sig1)), nj.array(arrayUtil.flatten(sig2)))
-
-exports.generate = generate
-exports.grayscale = grayscale
-exports.autoCrop = autoCrop
-exports.normalize = normalize
-exports.computeGridAverages = computeGridAverages
-exports.distance = distance
-
-// http://stackoverflow.com/a/23823717
-function average(arr) {
-    return arr.reduce(function (sum, a, i, ar) {
-        sum += a;
-        return i === ar.length - 1 ? (ar.length === 0 ? 0 : sum / ar.length) : sum
-    }, 0)
-}
-
 // http://stackoverflow.com/a/12628791
 function cartesianProductOf() {
     return _.reduce(arguments, function (a, b) {
@@ -154,3 +131,5 @@ function cartesianProductOf() {
 function mCoords(idx, rs, cs) {
     return [Math.floor(idx / rs), idx % cs]
 }
+
+exports.goldberg = goldberg
