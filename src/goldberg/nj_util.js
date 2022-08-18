@@ -71,14 +71,10 @@ function cumulativeSum(a, axis) {
     sliceShape.splice(axis, 1)
 
     if (sliceShape.length === 0) {
-        console.log("Zero")
-
-
         // get cumulative sum of array (splice to discard initial 0)
         const orig = arrayUtil.scanLeft(0, a.tolist(), (prev, curr) => prev + curr).slice(1)
         return nj.array(orig)
     } else {
-        console.log("Nah")
         let slice = _.map(_.range(nd), () => [null, null, null])
 
         const result = []
