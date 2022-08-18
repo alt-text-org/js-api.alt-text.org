@@ -262,11 +262,6 @@ const ocrOpts = {
             },
         },
     }, handler: (request, reply) => {
-        if (request.headers.authorization !== config.writerToken) {
-            reply.status(401).send()
-            return
-        }
-
         const {ocrTarget} = request.body;
 
         if (!ocrTarget.base64Image) {
