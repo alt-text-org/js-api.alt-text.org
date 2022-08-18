@@ -107,7 +107,7 @@ const fetchOpts = {
             return;
         }
 
-        if (image.url && image.url.match(/$data:.*/)) {
+        if (image.url && image.url.match(/^data:.*/)) {
             image.base64 = image.url
             image.url = null
         }
@@ -184,7 +184,7 @@ const saveOpts = {
             return;
         }
 
-        if (image.url && image.url.match(/$data:.*/)) {
+        if (image.url && image.url.match(/^data:.*/)) {
             image.base64 = image.url
             image.url = null
         }
