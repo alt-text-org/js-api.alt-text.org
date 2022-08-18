@@ -98,6 +98,7 @@ const fetchOpts = {
         },
     }, handler: (request, reply) => {
         const {image, language} = request.body;
+        const start = Date.now()
 
         if (!image.base64 === !image.url) {
             reply.status(400).send({
@@ -117,10 +118,6 @@ const fetchOpts = {
                 return storage.getAlt(searchables.sha256, searchables.goldberg544, language);
             })
             .then(async (alt) => {
-                if (!alt) {
-                    return null;
-                }
-
                 let ocr = await getOCR(image.base64, image.url);
                 if (ocr) {
                     alt.ocr = ocr;
@@ -129,13 +126,11 @@ const fetchOpts = {
                 return alt;
             })
             .then((alt) => {
-                if (!alt) {
-                    return;
-                }
-
                 if (alt.exact.length + alt.fuzzy.length === 0 && !alt.ocr) {
+                    console.log(`${ts()}: No alt text found for '${image.url || '<base64>'}' in ${Date.now() - start}ms`)
                     reply.status(404).send({error: "No matching alt text found"});
                 } else {
+                    console.log(`${ts()}: Found ${alt.exact.length} exact, ${alt.fuzzy.length} fuzzy, and ocr: ${!!alt.ocr} for '${image.url || '<base64>'}' in ${Date.now() - start}ms`)
                     reply.status(200).send(JSON.stringify(alt));
                 }
             })

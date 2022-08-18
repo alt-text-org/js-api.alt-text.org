@@ -1,5 +1,5 @@
 const MIN_RESULTS = 5;
-const MIN_MATCH = 0
+const MIN_MATCH = 0.6
 
 function makeStorage(pineconeClient, firestoreClient) {
     return {
