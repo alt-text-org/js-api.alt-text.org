@@ -107,10 +107,15 @@ const fetchOpts = {
             return;
         }
 
+        if (image.url && image.url.match(/$data:.*/)) {
+            image.base64 = image.url
+            image.url = null
+        }
+
         getSearchables(image.base64, image.url)
             .then((searchables) => {
                 if (!searchables) {
-                    console.log(`${ts()}: Failed to get searchables for ${image.url || "<base64>"}`);
+                    console.log(`${ts()}: Failed to get searchables for ${(image.url || "<base64>").slice(0, 100)}`);
                     reply.status(400).send({error: "Couldn't get searchables for requested image"});
                     return null;
                 }
@@ -127,7 +132,7 @@ const fetchOpts = {
             })
             .then((alt) => {
                 if (alt.exact.length + alt.fuzzy.length === 0 && !alt.ocr) {
-                    console.log(`${ts()}: No alt text found for '${image.url || '<base64>'}' in ${Date.now() - start}ms`)
+                    console.log(`${ts()}: No alt text found for '${(image.url || "<base64>").slice(0, 100)}' in ${Date.now() - start}ms`)
                     reply.status(404).send({error: "No matching alt text found"});
                 } else {
                     console.log(`${ts()}: Found ${alt.exact.length} exact, ${alt.fuzzy.length} fuzzy, and ocr: ${!!alt.ocr} for '${image.url || '<base64>'}' in ${Date.now() - start}ms`)
@@ -135,7 +140,7 @@ const fetchOpts = {
                 }
             })
             .catch((err) => {
-                console.log(`${ts()}: Failed to get alt text for ${image.url || "<base64>"}`);
+                console.log(`${ts()}: Failed to get alt text for ${(image.url || "<base64>").slice(0, 100)}`);
                 console.log(err);
                 reply.status(500).send({error: "Internal server error"});
             });
@@ -177,6 +182,11 @@ const saveOpts = {
                 error: "Must include exactly one of image.url and image.base64",
             });
             return;
+        }
+
+        if (image.url && image.url.match(/$data:.*/)) {
+            image.base64 = image.url
+            image.url = null
         }
 
         getSearchables(image.base64, image.url).then(async (searchables) => {
