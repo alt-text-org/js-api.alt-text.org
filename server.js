@@ -166,7 +166,7 @@ const saveOpts = {
             },
         },
     }, handler: (request, reply) => {
-        if (request.headers.Authorization !== config.writerToken) {
+        if (request.headers.authorization !== config.writerToken) {
             reply.status(401).send()
             return
         }
