@@ -1,8 +1,12 @@
 const crypto = require("crypto");
+const path = require('path');
 const fetch = require("node-fetch");
+const Piscina = require('piscina');
 const {createCanvas, loadImage, Image} = require('canvas')
 
-const {goldberg} = require("./goldberg/image_signature");
+const piscina = new Piscina({
+    filename: path.resolve(__dirname, 'worker.js')
+});
 
 function ts() {
     return new Date().toISOString();
@@ -59,10 +63,14 @@ function sha256Image(imageData) {
         .digest("hex");
 }
 
-function searchablesForImageData(imageData) {
+async function searchablesForImageData(imageData) {
     return {
         sha256: sha256Image(imageData),
-        goldberg544: goldberg(imageData)
+        goldberg544: await piscina.run({
+            dataBuffer: imageData.data.buffer,
+            height: imageData.height,
+            width: imageData.width
+        })
     }
 }
 
@@ -80,7 +88,7 @@ async function searchablesForUrl(url) {
     const imageData = context
         .getImageData(0, 0, canvas.width, canvas.height);
 
-    return searchablesForImageData(imageData)
+    return await searchablesForImageData(imageData)
 }
 
 async function searchablesForBase64(base64) {
@@ -91,7 +99,7 @@ async function searchablesForBase64(base64) {
     })
 
     if (imageData) {
-        return searchablesForImageData(imageData)
+        return await searchablesForImageData(imageData)
     } else {
         return null;
     }

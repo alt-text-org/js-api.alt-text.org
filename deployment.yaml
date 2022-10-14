@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api
+  name: api-alt-text-org
+  namespace: library
+spec:
+  selector:
+    matchLabels:
+      app: api
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      serviceAccountName: api-alt-text-org
+      containers:
+        - name: api
+          image: hkolbeck/api-alt-text-org:0.0.3
+          ports:
+            - containerPort: 3000

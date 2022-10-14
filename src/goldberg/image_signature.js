@@ -5,9 +5,9 @@ const nj = require('numjs')
 const njUtil = require('./nj_util')
 const arrayUtil = require('./array_util')
 
-function goldberg(imageData) {
-    const gray = nj.array(grayscale(imageData))
-    const reshaped = gray.reshape(imageData.height, imageData.width)
+function goldberg(dataBuffer, height, width) {
+    const gray = nj.array(grayscale(dataBuffer))
+    const reshaped = gray.reshape(height, width)
 
     const cropped = autoCrop(reshaped, 10, 90)
 
@@ -35,8 +35,8 @@ function goldberg(imageData) {
     return _.map(differentialGroups, differentials => _.map(differentials, normalizeWithCutoffs)).flat()
 }
 
-function grayscale(imageData) {
-    const rgba = new Uint8Array(imageData.data.buffer)
+function grayscale(dataBuffer) {
+    const rgba = new Uint8Array(dataBuffer)
     let greyscale = new Uint8Array(rgba.length / 4);
     for (let i = 0, j = 0; i < rgba.length; i += 4, j++) {
         let intensity = (rgba[i] + rgba[i + 1] + rgba[i + 2]) * (rgba[i + 3] / 255.0);
