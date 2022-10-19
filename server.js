@@ -160,7 +160,7 @@ async function getOCR(base64, url) {
                     return clients.storage.getAlt(searchables.sha256, searchables.goldberg544, language);
                 })
                 .then(async (alt) => {
-                    let ocr = await getOCR(image.base64, image.url);
+                    let ocr = null//await getOCR(image.base64, image.url);
                     if (ocr) {
                         alt.ocr = ocr;
                     }
