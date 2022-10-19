@@ -1,6 +1,6 @@
 {
   "name": "api-alt-text-org",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Backend for storing alt text",
   "main": "server.js",
   "scripts": {

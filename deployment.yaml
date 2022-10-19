@@ -18,6 +18,6 @@ spec:
       serviceAccountName: api-alt-text-org
       containers:
         - name: api
-          image: hkolbeck/api-alt-text-org:0.0.3
+          image: hkolbeck/api-alt-text-org:0.0.4
           ports:
             - containerPort: 3000
